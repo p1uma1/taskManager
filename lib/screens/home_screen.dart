@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/screens/task_details_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -6,6 +7,8 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Task Manager"),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
@@ -20,19 +23,63 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  TaskCard("Meeting with Team", "10:00 AM"),
-                  TaskCard("Submit Report", "2:00 PM"),
+                  TaskCard(
+                    title: "Meeting with Team",
+                    time: "10:00 AM",
+                    description: "Discuss the project roadmap",
+                    dueDate: DateTime.now(),
+                    priority: "High",
+                    status: "Pending",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskDetailsScreen(
+                            taskTitle: "Meeting with Team",
+                            taskDescription: "Discuss the project roadmap",
+                            dueTime: "10:00 AM",
+                            dueDate: DateTime.now(),
+                            priority: "High",
+                            status: "Pending",
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  TaskCard(
+                    title: "Submit Report",
+                    time: "2:00 PM",
+                    description: "Finalize and submit the report to the manager",
+                    dueDate: DateTime.now(),
+                    priority: "Medium",
+                    status: "Pending",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskDetailsScreen(
+                            taskTitle: "Submit Report",
+                            taskDescription: "Finalize and submit the report to the manager",
+                            dueTime: "2:00 PM",
+                            dueDate: DateTime.now(),
+                            priority: "Medium",
+                            status: "Pending",
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-            FloatingActionButton(
-              onPressed: () {
-                // Navigate to Add Task Screen
-              },
-              child: Icon(Icons.add),
-            ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to Add Task Screen
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -41,8 +88,21 @@ class HomeScreen extends StatelessWidget {
 class TaskCard extends StatelessWidget {
   final String title;
   final String time;
+  final String description;
+  final DateTime dueDate;
+  final String priority;
+  final String status;
+  final VoidCallback onTap;
 
-  TaskCard(this.title, this.time);
+  TaskCard({
+    required this.title,
+    required this.time,
+    required this.description,
+    required this.dueDate,
+    required this.priority,
+    required this.status,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +111,7 @@ class TaskCard extends StatelessWidget {
         title: Text(title),
         subtitle: Text("Due: $time"),
         trailing: Icon(Icons.check_circle_outline),
+        onTap: onTap,
       ),
     );
   }

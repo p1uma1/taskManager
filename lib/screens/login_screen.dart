@@ -35,6 +35,12 @@ class LoginScreen extends StatelessWidget {
               },
               child: Text("Create an Account"),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/home');// Navigate to Sign-Up Screen
+              },
+              child: Text("skip"),
+            ),
           ],
         ),
       ),
