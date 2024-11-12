@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/models/task.dart';
 
 class TaskDetailsScreen extends StatelessWidget {
-  final String taskTitle;
-  final String taskDescription;
-  final String dueTime;
-  final DateTime dueDate;
-  final String priority;
-  final String status;
+  final Task task;
 
-  TaskDetailsScreen({
-    required this.taskTitle,
-    required this.taskDescription,
-    required this.dueTime,
-    required this.dueDate,
-    required this.priority,
-    required this.status,
-  });
+  TaskDetailsScreen({required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -29,20 +18,17 @@ class TaskDetailsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              taskTitle,
+              task.title,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Text(
-              taskDescription,
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-            ),
-            SizedBox(height: 20),
-            Text("Due: ${dueDate.toLocal().toString().split(' ')[0]} at $dueTime"),
+            Text(task.description),
             SizedBox(height: 10),
-            Text("Priority: $priority"),
+            Text("Due Date: ${task.dueDate}"),
             SizedBox(height: 10),
-            Text("Status: $status"),
+            Text("Priority: ${task.priority}"),
+            SizedBox(height: 10),
+            Text("Status: ${task.status}"),
           ],
         ),
       ),

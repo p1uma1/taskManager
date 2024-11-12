@@ -1,67 +1,78 @@
 import 'category.dart';
 import 'user.dart';
 
+enum TaskStatus { pending, inProgress, completed, overdue }
+enum TaskPriority { low, medium, high }
+
 class Task {
-  int _id;
-  String _title;
-  String _description;
-  DateTime _dueDate;
-  String _dueTime;
-  Duration _remainingTime;
-  int _priority;
-  String _status;
-  bool _isOverdue;
-  bool _onNotification;
+  final int id;
+  String title;
+  String description;
+  DateTime dueDate;
+  String dueTime;
+  TaskPriority priority;
+  TaskStatus status;
+  bool onNotification;
 
-  Category _category;
+  final Category category;
+  final User user;
 
-  User _user;
+  Task({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.dueDate,
+    required this.dueTime,
+    this.priority = TaskPriority.medium,
+    this.status = TaskStatus.pending,
+    this.onNotification = false,
+    required this.category,
+    required this.user,
+  });
 
-  Task(
-      this._id,
-      this._title,
-      this._description,
-      this._dueDate,
-      this._dueTime,
-      this._remainingTime,
-      this._priority,
-      this._status,
-      this._isOverdue,
-      this._onNotification,
-      this._category,
-      this._user);
+  // Calculate remaining time
+  Duration get remainingTime => dueDate.difference(DateTime.now());
 
-  int get id => _id;
-  String get title => _title;
-  String get description => _description;
-  DateTime get dueDate => _dueDate;
-  String get dueTime => _dueTime;
-  Duration get remainingTime => _remainingTime;
-  int get priority => _priority;
-  String get status => _status;
-  bool get isOverdue => _isOverdue;
-  bool get onNotification => _onNotification;
+  // Mark task as complete
+  void markComplete() {
+    status = TaskStatus.completed;
+  }
 
-  Category get category => _category;
-  User get user => _user;
 
-  set title(String title) => _title = title;
-  set description(String description) => _description = description;
-  set dueDate(DateTime dueDate) => _dueDate = dueDate;
-  set dueTime(String dueTime) => _dueTime = dueTime;
-  set remainingTime(Duration remainingTime) => _remainingTime = remainingTime;
-  set priority(int priority) => _priority = priority;
-  set status(String status) => _status = status;
-  set isOverdue(bool isOverdue) => _isOverdue = isOverdue;
-  set onNotification(bool onNotification) => _onNotification = onNotification;
+  // Convert Task to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'dueDate': dueDate.toIso8601String(),
+      'dueTime': dueTime,
+      'priority': priority.toString(),
+      'status': status.toString(),
+      'onNotification': onNotification,
+      'category': category.toJson(),
+      'user': user.toJson(),
+    };
+  }
 
-  set category(Category category) => _category = category;
-  set user(User user) => _user = user;
+  // Create Task from JSON
+  factory Task.fromJson(Map<String, dynamic> json, Category category, User user) {
+    return Task(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      dueDate: DateTime.parse(json['dueDate']),
+      dueTime: json['dueTime'],
+      priority: TaskPriority.values.firstWhere((e) => e.toString() == json['priority']),
+      status: TaskStatus.values.firstWhere((e) => e.toString() == json['status']),
+      onNotification: json['onNotification'],
+      category: category,
+      user: user,
+    );
+  }
 
-  void createTask() {}
-  void readTask() {}
-  void updateTask() {}
-  void deleteTask() {}
-  void markComplete() {}
-  void calculateRemainingTime() {}
+  @override
+  String toString() {
+    return 'Task(id: $id, title: $title, status: $status, dueDate: $dueDate)';
+  }
 }
