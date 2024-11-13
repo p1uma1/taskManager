@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'task_details_screen.dart';
-import 'package:taskmanager_new/models/task.dart'; // Import the updated Task model
+import 'upcoming_tasks_screen.dart';
+import 'overdue_tasks_screen.dart';
+import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/user.dart';
+import 'package:taskmanager_new/components/task_card.dart';
 
 class HomeScreen extends StatelessWidget {
-  final Category generalCategory = Category(1, "General", "General tasks", "icon.png");
-  final User currentUser = User(id:"1",  name:"John Doe", email: "john.doe@example.com");
-
   final List<Task> tasks = [
     Task(
       id: 1,
@@ -33,6 +33,35 @@ class HomeScreen extends StatelessWidget {
     ),
   ];
 
+  // Example upcoming and overdue tasks lists
+  final List<Task> upcomingTasks = [
+    Task(
+      id: 3,
+      title: "Prepare Presentation",
+      description: "Prepare slides for next week's meeting.",
+      dueDate: DateTime.now().add(Duration(days: 3)),
+      dueTime: "4:00 PM",
+      priority: TaskPriority.medium,
+      status: TaskStatus.pending,
+      category: Category(3, "Work", "Work-related tasks", "work_icon.png"),
+      user: User(id: "1", name: "John", email: "john.doe@example.com"),
+    ),
+  ];
+
+  final List<Task> overdueTasks = [
+    Task(
+      id: 4,
+      title: "Renew Subscription",
+      description: "Renew the software subscription before it expires.",
+      dueDate: DateTime.now().subtract(Duration(days: 1)),
+      dueTime: "5:00 PM",
+      priority: TaskPriority.high,
+      status: TaskStatus.pending,
+      category: Category(4, "Admin", "Administrative tasks", "admin_icon.png"),
+      user: User(id: "2", name: "Alice", email: "alice@example.com"),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +74,6 @@ class HomeScreen extends StatelessWidget {
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               "Today's Tasks",
@@ -71,12 +99,43 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-            Text(
-              "Upcoming Tasks",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),Text(
-              "Overdue Tasks",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            SizedBox(height: 20),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        UpcomingTasksScreen(upcomingTasks: upcomingTasks),
+                  ),
+                );
+              },
+              child: Text(
+                "Upcoming Tasks",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue),
+              ),
+            ),
+            SizedBox(height: 20),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        OverdueTasksScreen(overdueTasks: overdueTasks),
+                  ),
+                );
+              },
+              child: Text(
+                "Overdue Tasks",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -86,43 +145,6 @@ class HomeScreen extends StatelessWidget {
           // Navigate to Add Task Screen (to be implemented)
         },
         child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class TaskCard extends StatelessWidget {
-  final Task task;
-  final VoidCallback onTap;
-
-  TaskCard({required this.task, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      elevation: 3,
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          task.title,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Time: ${task.dueTime}"),
-            Text("Priority: ${task.priority.name}"),
-            Text("Status: ${task.status.name}"),
-          ],
-        ),
-        trailing: Icon(
-          task.status == TaskStatus.pending
-              ? Icons.hourglass_empty
-              : Icons.check_circle_outline,
-          color: task.status == TaskStatus.pending ? Colors.orange : Colors.green,
-        ),
-        onTap: onTap,
       ),
     );
   }
