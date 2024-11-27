@@ -1,13 +1,67 @@
 import 'package:flutter/material.dart';
+import 'recyclebin_screen.dart';
 import 'task_details_screen.dart';
 import 'upcoming_tasks_screen.dart';
 import 'overdue_tasks_screen.dart';
+import 'create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/user.dart';
 import 'package:taskmanager_new/components/task_card.dart';
+import '../components/side_nav_bar.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Widget _currentScreen = HomeContentScreen();
+
+  void _handleNavigation(String route) {
+    setState(() {
+      if (route == 'home') {
+        _currentScreen = HomeContentScreen();
+      } else if (route == 'recycle_bin') {
+        _currentScreen = RecycleBinScreen();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Task Manager"),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateCategoryScreen(),
+                ),
+              );
+            },
+          )
+        ],
+      ),
+      drawer: SideNavBar(onItemSelected: _handleNavigation),
+      body: _currentScreen,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to Add Task Screen (to be implemented)
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class HomeContentScreen extends StatelessWidget {
   final List<Task> tasks = [
     Task(
       id: 1,
@@ -33,7 +87,6 @@ class HomeScreen extends StatelessWidget {
     ),
   ];
 
-  // Example upcoming and overdue tasks lists
   final List<Task> upcomingTasks = [
     Task(
       id: 3,
@@ -64,87 +117,72 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Task Manager"),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Today's Tasks",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  final task = tasks[index];
-                  return TaskCard(
-                    task: task,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TaskDetailsScreen(task: task),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        UpcomingTasksScreen(upcomingTasks: upcomingTasks),
-                  ),
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Today's Tasks",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                final task = tasks[index];
+                return TaskCard(
+                  task: task,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TaskDetailsScreen(task: task),
+                      ),
+                    );
+                  },
                 );
               },
-              child: Text(
-                "Upcoming Tasks",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue),
-              ),
             ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        OverdueTasksScreen(overdueTasks: overdueTasks),
-                  ),
-                );
-              },
-              child: Text(
-                "Overdue Tasks",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red),
-              ),
+          ),
+          SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      UpcomingTasksScreen(upcomingTasks: upcomingTasks),
+                ),
+              );
+            },
+            child: Text(
+              "Upcoming Tasks",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to Add Task Screen (to be implemented)
-        },
-        child: Icon(Icons.add),
+          ),
+          SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      OverdueTasksScreen(overdueTasks: overdueTasks),
+                ),
+              );
+            },
+            child: Text(
+              "Overdue Tasks",
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }
