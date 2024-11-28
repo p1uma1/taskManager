@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/screens/category/category_list_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'recyclebin_screen.dart';
 import 'task_details_screen.dart';
 import 'upcoming_tasks_screen.dart';
 import 'overdue_tasks_screen.dart';
 import 'add_task_screen.dart';
-import 'create_category.dart';
+import 'category/create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/user.dart';
@@ -63,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentScreen = HomeContentScreen(tasks: tasks);
       } else if (route == 'recycle_bin') {
         _currentScreen = RecycleBinScreen();
+      } else if (route == 'categories') {
+        _currentScreen = CategoryListScreen();
       }
     });
   }
