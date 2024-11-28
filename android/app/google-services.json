@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "488816724512",
+    "project_id": "policymaker-ee7e9",
+    "storage_bucket": "policymaker-ee7e9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488816724512:android:9ae582812dfe301c2b0a45",
+        "android_client_info": {
+          "package_name": "com.publicpulse.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoCgVpVn9mr1IpyI6Vi7Lm1j86NT6N1G0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
