@@ -159,7 +159,13 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
                   Center(
                     child: ElevatedButton(
                       onPressed: _saveCategory,
-                      child: Text('Save Category'),
+                      child: Text(
+                        'Save Category',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         padding:
@@ -169,21 +175,6 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
                     ),
                   ),
                 ],
-              ),
-            ),
-            SizedBox(height: 20),
-            // Display categories from the Category model
-            Expanded(
-              child: ListView.builder(
-                itemCount: Category.getCategories().length,
-                itemBuilder: (context, index) {
-                  final category = Category.getCategories()[index];
-                  return ListTile(
-                    title: Text(category.name),
-                    subtitle: Text(category.description),
-                    leading: Icon(Icons.home), // Replace with actual icon logic
-                  );
-                },
               ),
             ),
           ],

@@ -5,7 +5,13 @@ class Category {
   String _icon;
 
   // Static list to hold categories
-  static List<Category> _categories = [];
+  static List<Category> _categories = [
+    Category(1, 'Work', 'Tasks related to work', 'work_icon'),
+    Category(2, 'Personal', 'Personal to-do items', 'personal_icon'),
+    Category(3, 'Shopping', 'Shopping list and reminders', 'shopping_icon'),
+    Category(4, 'Fitness', 'Fitness goals and workouts', 'fitness_icon'),
+    Category(5, 'Travel', 'Travel plans and itineraries', 'travel_icon'),
+  ];
 
   // Constructor
   Category(this._id, this._name, this._description, this._icon);

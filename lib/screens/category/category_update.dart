@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taskmanager_new/models/category.dart';
-import '../../models/category.dart'; // Import Category class
+import '../../models/category.dart';
 
 class UpdateCategoryScreen extends StatefulWidget {
   final Category category;
@@ -34,7 +33,8 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Category updated successfully!')));
+      SnackBar(content: Text('Category updated successfully!')),
+    );
   }
 
   @override
@@ -50,18 +50,31 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(
+                labelText: 'Name',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
+            SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(
+                labelText: 'Description',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updateCategory,
-              child: Text('Update Category'),
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+              child: Text('Update Category',
+                  style: TextStyle(color: Colors.black)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent.shade100,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ],
         ),
