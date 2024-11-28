@@ -3,6 +3,7 @@ import 'recyclebin_screen.dart';
 import 'task_details_screen.dart';
 import 'upcoming_tasks_screen.dart';
 import 'overdue_tasks_screen.dart';
+import 'add_task_screen.dart';
 import 'create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
@@ -16,53 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget _currentScreen = HomeContentScreen();
-
-  void _handleNavigation(String route) {
-    setState(() {
-      if (route == 'home') {
-        _currentScreen = HomeContentScreen();
-      } else if (route == 'recycle_bin') {
-        _currentScreen = RecycleBinScreen();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Task Manager"),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.category),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateCategoryScreen(),
-                ),
-              );
-            },
-          )
-        ],
-      ),
-      drawer: SideNavBar(onItemSelected: _handleNavigation),
-      body: _currentScreen,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to Add Task Screen (to be implemented)
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class HomeContentScreen extends StatelessWidget {
-  final List<Task> tasks = [
+  List<Task> tasks = [
     Task(
       id: 1,
       title: "Team Meeting",
@@ -87,33 +42,80 @@ class HomeContentScreen extends StatelessWidget {
     ),
   ];
 
-  final List<Task> upcomingTasks = [
-    Task(
-      id: 3,
-      title: "Prepare Presentation",
-      description: "Prepare slides for next week's meeting.",
-      dueDate: DateTime.now().add(Duration(days: 3)),
-      dueTime: "4:00 PM",
-      priority: TaskPriority.medium,
-      status: TaskStatus.pending,
-      category: Category(3, "Work", "Work-related tasks", "work_icon.png"),
-      user: User(id: "1", name: "John", email: "john.doe@example.com"),
-    ),
-  ];
+  Widget _currentScreen = const SizedBox(); // Placeholder screen.
 
-  final List<Task> overdueTasks = [
-    Task(
-      id: 4,
-      title: "Renew Subscription",
-      description: "Renew the software subscription before it expires.",
-      dueDate: DateTime.now().subtract(Duration(days: 1)),
-      dueTime: "5:00 PM",
-      priority: TaskPriority.high,
-      status: TaskStatus.pending,
-      category: Category(4, "Admin", "Administrative tasks", "admin_icon.png"),
-      user: User(id: "2", name: "Alice", email: "alice@example.com"),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Set the default screen to show home content.
+    _currentScreen = HomeContentScreen(tasks: tasks);
+  }
+
+  void _handleNavigation(String route) {
+    setState(() {
+      if (route == 'home') {
+        _currentScreen = HomeContentScreen(tasks: tasks);
+      } else if (route == 'recycle_bin') {
+        _currentScreen = RecycleBinScreen();
+      }
+    });
+  }
+
+  void _addNewTask(Task task) {
+    setState(() {
+      tasks.add(task);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Task Manager"),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateCategoryScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      drawer: SideNavBar(onItemSelected: _handleNavigation),
+      body: _currentScreen,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final newTask = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddTaskScreen()),
+          );
+          if (newTask != null && newTask is Task) {
+            _addNewTask(newTask);
+          }
+        },
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 6.0,
+        tooltip: 'Add Task',
+        child: Icon(
+          Icons.add,
+          size: 28,
+        ),
+      ),
+    );
+  }
+}
+
+class HomeContentScreen extends StatelessWidget {
+  final List<Task> tasks;
+
+  const HomeContentScreen({required this.tasks});
 
   @override
   Widget build(BuildContext context) {
@@ -128,23 +130,31 @@ class HomeContentScreen extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-                return TaskCard(
-                  task: task,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TaskDetailsScreen(task: task),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            child: tasks.isNotEmpty
+                ? ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return TaskCard(
+                        task: task,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TaskDetailsScreen(task: task),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  )
+                : Center(
+                    child: Text(
+                      "No tasks for today!",
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ),
           ),
           SizedBox(height: 20),
           GestureDetector(
@@ -152,8 +162,13 @@ class HomeContentScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      UpcomingTasksScreen(upcomingTasks: upcomingTasks),
+                  builder: (context) => UpcomingTasksScreen(
+                    upcomingTasks: tasks
+                        .where((task) =>
+                            task.dueDate.isAfter(DateTime.now()) &&
+                            task.status == TaskStatus.pending)
+                        .toList(),
+                  ),
                 ),
               );
             },
@@ -171,8 +186,13 @@ class HomeContentScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      OverdueTasksScreen(overdueTasks: overdueTasks),
+                  builder: (context) => OverdueTasksScreen(
+                    overdueTasks: tasks
+                        .where((task) =>
+                            task.dueDate.isBefore(DateTime.now()) &&
+                            task.status == TaskStatus.pending)
+                        .toList(),
+                  ),
                 ),
               );
             },

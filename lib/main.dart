@@ -11,5 +11,6 @@ void main() {
       '/login': (context) => LoginScreen(),
       '/home': (context) => HomeScreen(),
     },
+    debugShowCheckedModeBanner: false,
   ));
 }
