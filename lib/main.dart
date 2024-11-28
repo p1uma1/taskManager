@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/screens/home_screen.dart';
 import 'package:taskmanager_new/screens/login_screen.dart';
+import 'package:taskmanager_new/screens/singup_screen.dart';
 import 'package:taskmanager_new/screens/splash_screen.dart';
 
 void main() async{
@@ -14,6 +15,7 @@ void main() async{
       '/splash': (context) => SplashScreen(),
       '/login': (context) => LoginScreen(),
       '/home': (context) => HomeScreen(),
+      '/signup': (context) => SignupScreen()
     },
     debugShowCheckedModeBanner: false,
   ));

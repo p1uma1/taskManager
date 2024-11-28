@@ -26,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
       } else {
@@ -100,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 10),
               TextButton(
                 onPressed: () {
+
                   Navigator.pushReplacementNamed(context, '/signup');
                 },
                 child: Text("Create an Account"),

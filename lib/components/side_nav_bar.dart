@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/services/auth_service.dart';
 import '../models/recyclebin.dart';
 
 class SideNavBar extends StatelessWidget {
@@ -48,8 +49,20 @@ class SideNavBar extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
+          Divider(), // Optional: Add a divider above the logout button
+
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text("Logout"),
+            onTap: () {
+              AuthService().logout(); // Trigger the logout action
+              Navigator.pop(context); // Close the drawer
+              Navigator.pushNamed(context, "/login");
+            },
+          ),
         ],
       ),
+
     );
   }
 }
