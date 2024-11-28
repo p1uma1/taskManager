@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:taskmanager_new/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,7 +11,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -22,40 +22,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> signInWithEmailAndPassword() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+      final user = await _authService.signInWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
-      } catch (e) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+          SnackBar(content: Text('Login failed. Please try again.')),
         );
       }
     }
   }
 
   Future<void> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        throw Exception('Google Sign-In was canceled.');
-      }
+    final user = await _authService.signInWithGoogle();
 
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await _auth.signInWithCredential(credential);
+    if (user != null) {
       Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Login failed: ${e.toString()}')),
+        SnackBar(content: Text('Google Login failed. Please try again.')),
       );
     }
   }
@@ -105,26 +94,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: signInWithEmailAndPassword,
+                onPressed: signInWithEmailAndPassword, // Call the adjusted method
                 child: Text("Login with Email"),
               ),
               SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: signInWithGoogle,
-                child: Text("Login with Google"),
-              ),
               TextButton(
                 onPressed: () {
-                  // Navigate to Sign-Up Screen
                   Navigator.pushReplacementNamed(context, '/signup');
                 },
                 child: Text("Create an Account"),
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-                child: Text("Skip"),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: signInWithGoogle, // Call the Google sign-in method
+                child: Text("Login with Google"),
               ),
             ],
           ),
