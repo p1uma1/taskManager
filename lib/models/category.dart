@@ -4,6 +4,9 @@ class Category {
   String _description;
   String _icon;
 
+  // Static list to hold categories
+  static List<Category> _categories = [];
+
   // Constructor
   Category(this._id, this._name, this._description, this._icon);
 
@@ -39,20 +42,28 @@ class Category {
     );
   }
 
-  // Category CRUD Operations (currently empty)
-  void addCategory() {
-    // Add logic for adding category
+  // Add a new category to the static list
+  static void addCategory(Category category) {
+    _categories.add(category);
   }
 
-  void getCategories() {
-    // Add logic for getting categories
+  // Get the list of all categories
+  static List<Category> getCategories() {
+    return _categories;
   }
 
-  void updateCategory() {
-    // Add logic for updating category
+  // Update a category in the list
+  static void updateCategory(Category updatedCategory) {
+    for (var i = 0; i < _categories.length; i++) {
+      if (_categories[i].id == updatedCategory.id) {
+        _categories[i] = updatedCategory;
+        break;
+      }
+    }
   }
 
-  void deleteCategory() {
-    // Add logic for deleting category
+  // Delete a category from the list
+  static void deleteCategory(int id) {
+    _categories.removeWhere((category) => category.id == id);
   }
 }

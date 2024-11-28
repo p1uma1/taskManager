@@ -40,6 +40,14 @@ class SideNavBar extends StatelessWidget {
               Navigator.pop(context); // Close the drawer
             },
           ),
+          ListTile(
+            leading: Icon(Icons.category),
+            title: Text("Categories"),
+            onTap: () {
+              onItemSelected('categories'); // When "Categories" is tapped
+              Navigator.pop(context);
+            },
+          ),
         ],
       ),
     );

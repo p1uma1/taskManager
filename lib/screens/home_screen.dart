@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/screens/category/category_list_screen.dart';
+import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'recyclebin_screen.dart';
 import 'task_details_screen.dart';
 import 'upcoming_tasks_screen.dart';
 import 'overdue_tasks_screen.dart';
 import 'add_task_screen.dart';
-import 'create_category.dart';
+import 'category/create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/user.dart';
 import 'package:taskmanager_new/components/task_card.dart';
 import '../components/side_nav_bar.dart';
+import '../models/task_notification.dart';
+import '../screens/notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -42,11 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
+  List<TaskNotification> notifications = [];
   Widget _currentScreen = const SizedBox(); // Placeholder screen.
 
   @override
   void initState() {
     super.initState();
+    NotificationHelper.initialize();
+    _scheduleNotificationsForTomorrow();
     // Set the default screen to show home content.
     _currentScreen = HomeContentScreen(tasks: tasks);
   }
@@ -57,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentScreen = HomeContentScreen(tasks: tasks);
       } else if (route == 'recycle_bin') {
         _currentScreen = RecycleBinScreen();
+      } else if (route == 'categories') {
+        _currentScreen = CategoryListScreen();
       }
     });
   }
@@ -84,6 +93,37 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          IconButton(
+              icon: Stack(
+                children: [
+                  Icon(Icons.notifications),
+                  if (notifications.isNotEmpty)
+                    Positioned(
+                      right: 0,
+                      child: CircleAvatar(
+                        radius: 8,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          '${notifications.length}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationsScreen(
+                      notifications: notifications,
+                    ),
+                  ),
+                );
+              }),
         ],
       ),
       drawer: SideNavBar(onItemSelected: _handleNavigation),
@@ -109,6 +149,29 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _scheduleNotificationsForTomorrow() {
+    final tomorrow = DateTime.now().add(Duration(days: 1));
+    final tasksDueTomorrow = tasks.where((task) {
+      return task.dueDate.year == tomorrow.year &&
+          task.dueDate.month == tomorrow.month &&
+          task.dueDate.day == tomorrow.day &&
+          task.status == TaskStatus.pending;
+    }).toList();
+
+    for (var task in tasksDueTomorrow) {
+      final notification = TaskNotification(
+        task.id,
+        task.dueDate.subtract(Duration(hours: 1)), // Notify 1 hour before
+        'Reminder: ${task.title} is due tomorrow!',
+        task,
+      );
+      notification.sendNotification();
+      setState(() {
+        notifications.add(notification);
+      });
+    }
   }
 }
 

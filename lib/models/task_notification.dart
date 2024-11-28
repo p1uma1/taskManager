@@ -1,14 +1,14 @@
-
 import 'task.dart';
+import '../services/NotificationHelper.dart';
 
-class Notification {
+class TaskNotification {
   int _id;
   DateTime _notificationDate;
   String _message;
 
   Task _task;
 
-  Notification(this._id, this._notificationDate, this._message, this._task);
+  TaskNotification(this._id, this._notificationDate, this._message, this._task);
 
   int get id => _id;
   DateTime get notificationDate => _notificationDate;
@@ -21,6 +21,16 @@ class Notification {
   set message(String message) => _message = message;
   set task(Task task) => _task = task;
 
-  void sendNotification() {}
-  void cancelNotification() {}
+  void sendNotification() {
+    NotificationHelper.scheduleNotification(
+      id: _id,
+      title: _task.title,
+      body: _message,
+      scheduledDate: _notificationDate,
+    );
+  }
+
+  void cancelNotification() {
+    NotificationHelper.cancelNotification(_id);
+  }
 }
