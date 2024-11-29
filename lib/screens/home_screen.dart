@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/repositories/category_repository.dart';
 import 'package:taskmanager_new/repositories/task_repository.dart';
@@ -34,61 +35,60 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late CategoryRepository categoryRepository;
-  late CategoryService categoryService;
+  late List<Category> categories = [];
+  late List<Task>? tasks = [];
+  late String? userId;
+  List<TaskNotification> notifications = [];
+  Widget _currentScreen = const SizedBox();
 
   @override
   void initState() {
     super.initState();
-    categoryRepository = widget.categoryRepository;
-    categoryService = widget.categoryService;
+    userId = FirebaseAuth.instance.currentUser?.uid;
     NotificationHelper.initialize();
-    _scheduleNotificationsForTomorrow();
-    _currentScreen = HomeContentScreen(tasks: tasks, categories: categories);
+    _fetchData();
+    _currentScreen = const Center(child: CircularProgressIndicator());
   }
 
-  final List<Category> categories = [
-    Category(
-      id: "1",
-      name: "Work",
-      description: "Work-related tasks",
-      icon: "work_icon.png",
-    ),
-    Category(
-      id: "2",
-      name: "Finance",
-      description: "Financial tasks",
-      icon: "finance_icon.png",
-    ),
-  ];
+  void _fetchData() async {
+    if (userId != null) {
+      final fetchedCategories =
+      await widget.categoryService.getAllCategories();
+      final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
+      setState(() {
+        categories = fetchedCategories;
+        tasks = fetchedTasks;
+        _currentScreen = HomeContentScreen(tasks: tasks, categories: categories);
+      });
+    }
+  }
 
-  final List<Task> tasks = [
-    Task(
-      id: "1",
-      title: "Team Meeting",
-      description: "Discuss project roadmap and timelines.",
-      dueDate: DateTime.now().add(Duration(hours: 2)),
-      dueTime: "10:00 AM",
-      priority: TaskPriority.high,
-      status: TaskStatus.pending,
-      categoryId: "1",
-      userId: "1",
-    ),
-    Task(
-      id: "2",
-      title: "Submit Report",
-      description: "Submit the Q3 financial report.",
-      dueDate: DateTime.now().add(Duration(days: 1)),
-      dueTime: "2:00 PM",
-      priority: TaskPriority.medium,
-      status: TaskStatus.pending,
-      categoryId: "2",
-      userId: "2",
-    ),
-  ];
+  void _scheduleNotificationsForTomorrow() {
+    final tomorrow = DateTime.now().add(Duration(days: 1));
 
-  List<TaskNotification> notifications = [];
-  Widget _currentScreen = const SizedBox();
+    final tasksDueTomorrow = (tasks != null)
+        ? tasks!.where((task) {
+      return task.dueDate.year == tomorrow.year &&
+          task.dueDate.month == tomorrow.month &&
+          task.dueDate.day == tomorrow.day &&
+          task.status == TaskStatus.pending;
+    }).toList()
+        : [];
+
+
+    for (var task in tasksDueTomorrow) {
+      final notification = TaskNotification(
+        id: int.parse(task.id),
+        notificationDate: task.dueDate.subtract(Duration(hours: 1)),
+        message: 'Reminder: ${task.title} is due tomorrow!',
+        task: task,
+      );
+      notification.sendNotification();
+      setState(() {
+        notifications.add(notification);
+      });
+    }
+  }
 
   void _handleNavigation(String route) {
     setState(() {
@@ -98,30 +98,22 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (route == 'recycle_bin') {
         _currentScreen = RecycleBinScreen();
       } else if (route == 'categories') {
-        _currentScreen = CategoryListScreen(categoryService: categoryService);
+        _currentScreen =
+            CategoryListScreen(categoryService: widget.categoryService);
       }
     });
   }
 
   void _addNewTask(Task task) {
     setState(() {
-      tasks.add(task);
+      if (tasks != null) {
+        tasks!.add(task); // Null check before calling add
+      } else {
+        tasks = [task]; // If tasks is null, initialize it with the new task
+      }
     });
   }
 
-  String _getCategoryName(String categoryId) {
-    return categories
-        .firstWhere(
-          (cat) => cat.id == categoryId,
-      orElse: () => Category(
-        id: "0",
-        name: "Unknown",
-        description: "Unknown Category",
-        icon: "",
-      ),
-    )
-        .name;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => CreateCategoryScreen(
-                    categoryService: categoryService,
+                    categoryService: widget.categoryService,
                   ),
                 ),
               );
@@ -201,54 +193,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  void _scheduleNotificationsForTomorrow() {
-    final tomorrow = DateTime.now().add(Duration(days: 1));
-    final tasksDueTomorrow = tasks.where((task) {
-      return task.dueDate.year == tomorrow.year &&
-          task.dueDate.month == tomorrow.month &&
-          task.dueDate.day == tomorrow.day &&
-          task.status == TaskStatus.pending;
-    }).toList();
-
-    for (var task in tasksDueTomorrow) {
-      final notification = TaskNotification(
-        id: int.parse(task.id),
-        notificationDate: task.dueDate.subtract(Duration(hours: 1)),
-        message: 'Reminder: ${task.title} is due tomorrow!',
-        task: task,
-      );
-      notification.sendNotification();
-      setState(() {
-        notifications.add(notification);
-      });
-    }
-  }
 }
 
 class HomeContentScreen extends StatelessWidget {
-  final List<Task> tasks;
+  final List<Task>? tasks;
   final List<Category> categories;
 
   const HomeContentScreen({required this.tasks, required this.categories});
 
+  String? _getCategoryName(String? categoryId) {
+    if (categoryId == null) return null;
+    return categories.firstWhere(
+          (cat) => cat.id == categoryId,
+      orElse: () => Category(
+        id: "0",
+        name: "Unknown",
+        description: "Unknown Category",
+        icon: "",
+      ),
+    ).name;
+  }
+
   @override
   Widget build(BuildContext context) {
-    String? getCategoryName(String? categoryId) {
-      if (categoryId == null) return null;
-      return categories
-          .firstWhere(
-            (cat) => cat.id == categoryId,
-        orElse: () => Category(
-          id: "0",
-          name: "Unknown",
-          description: "Unknown Category",
-          icon: "",
-        ),
-      )
-          .name;
-    }
-
     return Padding(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -260,27 +227,35 @@ class HomeContentScreen extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: tasks.isNotEmpty
+            child: tasks == null
+                ? Center(
+              child: CircularProgressIndicator(), // Show a loading indicator
+            )
+                : tasks!.isNotEmpty
                 ? ListView.builder(
-              itemCount: tasks.length,
+              itemCount: tasks!.length,
               itemBuilder: (context, index) {
-                final task = tasks[index];
+                final task = tasks![index];
                 return TaskCard(
                   task: task,
-                  categoryName: getCategoryName(task.getCategoryId()),
+                  categoryName: _getCategoryName(task.categoryId),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            TaskDetailsScreen(task: task, taskService: TaskService()),
+                        builder: (context) => TaskDetailsScreen(
+                          task: task,
+                          taskService: TaskService(),
+                        ),
                       ),
                     );
                   },
                 );
               },
             )
-                : Center(child: Text('No tasks available')),
+                : Center(
+              child: Text('No tasks available'),
+            ),
           ),
         ],
       ),
