@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/repositories/category_repository.dart';
+import 'package:taskmanager_new/repositories/task_repository.dart';
 import 'package:taskmanager_new/screens/category/category_list_screen.dart';
+import 'package:taskmanager_new/screens/task/add_task_screen.dart';
+import 'package:taskmanager_new/screens/task/task_details_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'package:taskmanager_new/services/category_service.dart';
+import 'package:taskmanager_new/services/task_service.dart';
 import 'recyclebin_screen.dart';
-import 'task_details_screen.dart';
-import 'add_task_screen.dart';
 import 'category/create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
@@ -17,9 +19,12 @@ import '../screens/notification_screen.dart';
 class HomeScreen extends StatefulWidget {
   final CategoryRepository categoryRepository;
   final CategoryService categoryService;
+  final TaskRepository taskRepository;
+  final TaskService taskService;
 
-  // Constructor now takes CategoryRepository and CategoryService as parameters
   HomeScreen({
+    required this.taskService,
+    required this.taskRepository,
     required this.categoryRepository,
     required this.categoryService,
   });
@@ -32,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late CategoryRepository categoryRepository;
   late CategoryService categoryService;
 
-  // Initialize the repositories and services
   @override
   void initState() {
     super.initState();
@@ -43,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _currentScreen = HomeContentScreen(tasks: tasks, categories: categories);
   }
 
-  // Sample tasks and categories (can be fetched from the service)
   final List<Category> categories = [
     Category(
       id: "1",
@@ -85,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   List<TaskNotification> notifications = [];
-  Widget _currentScreen = const SizedBox(); // Placeholder screen.
+  Widget _currentScreen = const SizedBox();
 
   void _handleNavigation(String route) {
     setState(() {
@@ -133,7 +136,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateCategoryScreen(categoryService: categoryService,)),
+                MaterialPageRoute(
+                  builder: (context) => CreateCategoryScreen(
+                    categoryService: categoryService,
+                  ),
+                ),
               );
             },
           ),
@@ -266,7 +273,7 @@ class HomeContentScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            TaskDetailsScreen(task: task),
+                            TaskDetailsScreen(task: task, taskService: TaskService()),
                       ),
                     );
                   },

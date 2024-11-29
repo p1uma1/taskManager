@@ -8,11 +8,15 @@ class TaskService {
   Future<void> createTask(Task task) async {
     await _taskRepository.addTask(task);
   }
+  Future<List<Task>?> getUpcomingTasks(String userId) async {
+    // Simulate network delay
+    await _taskRepository.getUpcomingTasks(userId);
+  }
 
   // Get all tasks for a specific user
-  Future<List<Task>> getTasksForUser(String userId) async {
+  Future<List<Task>?> getTasksForUser(String userId) async {
     final tasks = await _taskRepository.fetchTasks(userId);
-
+    if(tasks==null) return null;
     // Automatically update statuses based on due dates
     for (var task in tasks) {
       if (task.status == TaskStatus.pending || task.status == TaskStatus.overdue) {

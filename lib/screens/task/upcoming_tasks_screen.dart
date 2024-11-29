@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/models/task.dart';
+import 'package:taskmanager_new/services/task_service.dart';
 import 'task_details_screen.dart';
 import 'package:taskmanager_new/components/task_card.dart';
 
 class UpcomingTasksScreen extends StatelessWidget {
   final List<Task> upcomingTasks;
-
-  UpcomingTasksScreen({required this.upcomingTasks});
+  final TaskService taskService;
+  UpcomingTasksScreen({required this.upcomingTasks, required this.taskService});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,8 @@ class UpcomingTasksScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TaskDetailsScreen(task: task),
+                  builder: (context) =>
+                      TaskDetailsScreen(task: task, taskService: taskService,),
                 ),
               );
             },

@@ -12,7 +12,6 @@ class Task {
   TaskPriority priority;
   TaskStatus status;
   bool onNotification;
-
   final String? categoryId; // Nullable reference to the Category ID
   final String userId; // Firebase Auth User ID
 
@@ -43,6 +42,31 @@ class Task {
     return TaskStatus.pending;
   }
 
+  // CopyWith method for creating a new Task instance with modified properties
+  Task copyWith({
+    String? title,
+    String? description,
+    DateTime? dueDate,
+    String? dueTime,
+    TaskPriority? priority,
+    TaskStatus? status,
+    bool? onNotification,
+    String? categoryId,
+  }) {
+    return Task(
+      id: id, // ID is immutable
+      title: title ?? this.title,
+      description: description ?? this.description,
+      dueDate: dueDate ?? this.dueDate,
+      dueTime: dueTime ?? this.dueTime,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      onNotification: onNotification ?? this.onNotification,
+      categoryId: categoryId ?? this.categoryId,
+      userId: userId, // User ID is immutable
+    );
+  }
+
   // Convert Task to JSON for storage
   Map<String, dynamic> toJson() {
     return {
@@ -59,7 +83,7 @@ class Task {
     };
   }
 
-  String? getCategoryId(){
+  String? getCategoryId() {
     return categoryId;
   }
 
@@ -72,8 +96,10 @@ class Task {
       description: json['description'],
       dueDate: DateTime.parse(json['dueDate']),
       dueTime: json['dueTime'],
-      priority: TaskPriority.values.firstWhere((e) => e.toString() == json['priority']),
-      status: TaskStatus.values.firstWhere((e) => e.toString() == json['status']),
+      priority: TaskPriority.values
+          .firstWhere((e) => e.toString() == json['priority']),
+      status: TaskStatus.values
+          .firstWhere((e) => e.toString() == json['status']),
       onNotification: json['onNotification'],
       categoryId: json['categoryId'], // Retrieve nullable category reference
       userId: json['userId'],
@@ -92,3 +118,4 @@ class Task {
     return 'Task(id: $id, title: $title, categoryId: $categoryId, status: $status, dueDate: $dueDate)';
   }
 }
+

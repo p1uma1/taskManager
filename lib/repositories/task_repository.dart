@@ -18,7 +18,7 @@ class TaskRepository {
   }
 
   // Fetch tasks for a specific user
-  Future<List<Task>> fetchTasks(String userId) async {
+  Future<List<Task>?> fetchTasks(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_collectionName)
@@ -52,4 +52,28 @@ class TaskRepository {
       throw Exception('Failed to delete task: $e');
     }
   }
+
+  // Fetch upcoming tasks for a specific user
+  Future<List<Task>?> getUpcomingTasks(String userId) async {
+    try {
+      final now = DateTime.now();
+
+      // Query tasks where `dueDate` is in the future and `status` is pending
+      final snapshot = await _firestore
+          .collection(_collectionName)
+          .where('userId', isEqualTo: userId)
+          .where('dueDate', isGreaterThan: now.toIso8601String())
+          .where('status', isEqualTo: TaskStatus.pending.toString())
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID
+        return Task.fromJson(data);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch upcoming tasks: $e');
+    }
+  }
 }
+
