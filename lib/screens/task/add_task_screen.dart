@@ -20,9 +20,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   void _saveTask() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Save the task (replace with actual save logic)
-      final newTask = Task(
-        id: DateTime.now().millisecondsSinceEpoch,
+      // Save the task using the Task model's static create method
+      final newTask = Task.create(
         title: _title,
         description: _description,
         dueDate: _dueDate,

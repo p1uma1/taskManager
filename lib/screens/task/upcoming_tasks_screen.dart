@@ -24,7 +24,8 @@ class UpcomingTasksScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TaskDetailsScreen(task: task),
+                  builder: (context) =>
+                      TaskDetailsScreen(task: task, taskList: upcomingTasks),
                 ),
               );
             },

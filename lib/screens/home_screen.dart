@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:taskmanager_new/screens/category/category_list_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'recyclebin_screen.dart';
-import 'task_details_screen.dart';
-import 'upcoming_tasks_screen.dart';
-import 'overdue_tasks_screen.dart';
-import 'add_task_screen.dart';
+import 'task/task_details_screen.dart';
+import 'task/upcoming_tasks_screen.dart';
+import 'task/overdue_tasks_screen.dart';
+import 'task/add_task_screen.dart';
 import 'category/create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
@@ -179,6 +179,14 @@ class HomeContentScreen extends StatelessWidget {
   final List<Task> tasks;
 
   const HomeContentScreen({required this.tasks});
+  // Empty functions to pass to TaskDetailsScreen
+  void _updateTask(Task updatedTask) {
+    // Placeholder for update functionality
+  }
+
+  void _deleteTask(int taskId) {
+    // Placeholder for delete functionality
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -204,8 +212,10 @@ class HomeContentScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TaskDetailsScreen(task: task),
+                              builder: (context) => TaskDetailsScreen(
+                                task: task,
+                                taskList: tasks,
+                              ),
                             ),
                           );
                         },
