@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 import 'category_details.dart';
 
 class CategoryListScreen extends StatelessWidget {
+  final CategoryService categoryService; // Dependency injection for the service
+
+  // Constructor to pass the CategoryService
+  CategoryListScreen({required this.categoryService});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,8 +24,7 @@ class CategoryListScreen extends StatelessWidget {
         backgroundColor: Colors.blueAccent.shade100,
       ),
       body: FutureBuilder(
-        future: Future.delayed(
-            Duration(seconds: 1), () => Category.getCategories()),
+        future: categoryService.getAllCategories(), // Use service to fetch categories
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -46,7 +51,7 @@ class CategoryListScreen extends StatelessWidget {
                     title: Text(
                       category.name,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
                       category.description,
@@ -62,7 +67,7 @@ class CategoryListScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryDetailScreen(category: category),
+                              CategoryDetails(category: category, categoryService: categoryService),
                         ),
                       );
                     },

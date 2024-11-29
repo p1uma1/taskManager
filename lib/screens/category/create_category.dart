@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart'; // Import your Category class
 
+
 class CreateCategoryScreen extends StatefulWidget {
+
+  final CategoryService categoryService;
+
+  CreateCategoryScreen({required this.categoryService}); // Passing service as a parameter
+
   @override
   _CreateCategoryScreenState createState() => _CreateCategoryScreenState();
 }
@@ -24,18 +31,18 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
   ];
 
   // Function to save category using the Category model's addCategory method
-  void _saveCategory() {
+  void _saveCategory() async {
     if (_formKey.currentState!.validate()) {
       // Create a new Category object
       final newCategory = Category(
-        int.parse(_idController.text),
-        _nameController.text,
-        _descriptionController.text,
-        _selectedIcon,
+        id: _idController.text,  // Assuming the ID is a string
+        name: _nameController.text,
+        description: _descriptionController.text,
+        icon: _selectedIcon,
       );
 
-      // Add category using the addCategory method from Category model
-      Category.addCategory(newCategory);
+      // Call the CategoryService to add the category
+      await widget.categoryService.createCategory(newCategory);
 
       // Clear the form
       _idController.clear();
@@ -169,7 +176,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                         textStyle: TextStyle(fontSize: 16),
                       ),
                     ),

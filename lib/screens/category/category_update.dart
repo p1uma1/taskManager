@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 
-class UpdateCategoryScreen extends StatefulWidget {
+class CategoryUpdate extends StatefulWidget {
   final Category category;
+  final CategoryService categoryService;
 
-  UpdateCategoryScreen({required this.category});
+  CategoryUpdate({required this.category, required this.categoryService});
 
   @override
-  _UpdateCategoryScreenState createState() => _UpdateCategoryScreenState();
+  _CategoryUpdateState createState() => _CategoryUpdateState();
 }
 
-class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
+class _CategoryUpdateState extends State<CategoryUpdate> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
@@ -21,16 +23,19 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
     _descriptionController.text = widget.category.description;
   }
 
-  void _updateCategory() {
+  void _updateCategory() async {
     final updatedCategory = Category(
-      widget.category.id,
-      _nameController.text,
-      _descriptionController.text,
-      widget.category.icon,
+      id: widget.category.id,
+      name: _nameController.text,
+      description: _descriptionController.text,
+      icon: widget.category.icon,
     );
 
-    Category.updateCategory(updatedCategory);
 
+    // Use CategoryService to update the category
+    await widget.categoryService.updateCategory(updatedCategory);
+
+    // Notify the user
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Category updated successfully!')),
@@ -52,8 +57,7 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             SizedBox(height: 16),
@@ -61,19 +65,16 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
               controller: _descriptionController,
               decoration: InputDecoration(
                 labelText: 'Description',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updateCategory,
-              child: Text('Update Category',
-                  style: TextStyle(color: Colors.black)),
+              child: Text('Update Category', style: TextStyle(color: Colors.black)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent.shade100,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -82,3 +83,4 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
     );
   }
 }
+

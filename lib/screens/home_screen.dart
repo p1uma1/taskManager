@@ -1,71 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/repositories/category_repository.dart';
 import 'package:taskmanager_new/screens/category/category_list_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
+import 'package:taskmanager_new/services/category_service.dart';
 import 'recyclebin_screen.dart';
 import 'task_details_screen.dart';
-import 'upcoming_tasks_screen.dart';
-import 'overdue_tasks_screen.dart';
 import 'add_task_screen.dart';
 import 'category/create_category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
-import 'package:taskmanager_new/models/user.dart';
-import 'package:taskmanager_new/components/task_card.dart';
+import '../components/task_card.dart';
 import '../components/side_nav_bar.dart';
 import '../models/task_notification.dart';
 import '../screens/notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  final CategoryRepository categoryRepository;
+  final CategoryService categoryService;
+
+  // Constructor now takes CategoryRepository and CategoryService as parameters
+  HomeScreen({
+    required this.categoryRepository,
+    required this.categoryService,
+  });
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Task> tasks = [
+  late CategoryRepository categoryRepository;
+  late CategoryService categoryService;
+
+  // Initialize the repositories and services
+  @override
+  void initState() {
+    super.initState();
+    categoryRepository = widget.categoryRepository;
+    categoryService = widget.categoryService;
+    NotificationHelper.initialize();
+    _scheduleNotificationsForTomorrow();
+    _currentScreen = HomeContentScreen(tasks: tasks, categories: categories);
+  }
+
+  // Sample tasks and categories (can be fetched from the service)
+  final List<Category> categories = [
+    Category(
+      id: "1",
+      name: "Work",
+      description: "Work-related tasks",
+      icon: "work_icon.png",
+    ),
+    Category(
+      id: "2",
+      name: "Finance",
+      description: "Financial tasks",
+      icon: "finance_icon.png",
+    ),
+  ];
+
+  final List<Task> tasks = [
     Task(
-      id: 1,
+      id: "1",
       title: "Team Meeting",
       description: "Discuss project roadmap and timelines.",
       dueDate: DateTime.now().add(Duration(hours: 2)),
       dueTime: "10:00 AM",
       priority: TaskPriority.high,
       status: TaskStatus.pending,
-      category: Category(1, "Work", "Work-related tasks", "work_icon.png"),
-      user: User(id: "1", name: "Alice", email: "alice@example.com"),
+      categoryId: "1",
+      userId: "1",
     ),
     Task(
-      id: 2,
+      id: "2",
       title: "Submit Report",
       description: "Submit the Q3 financial report.",
       dueDate: DateTime.now().add(Duration(days: 1)),
       dueTime: "2:00 PM",
       priority: TaskPriority.medium,
       status: TaskStatus.pending,
-      category: Category(2, "Finance", "Financial tasks", "finance_icon.png"),
-      user: User(id: "2", name: "Bob", email: "bob@example.com"),
+      categoryId: "2",
+      userId: "2",
     ),
   ];
 
   List<TaskNotification> notifications = [];
   Widget _currentScreen = const SizedBox(); // Placeholder screen.
 
-  @override
-  void initState() {
-    super.initState();
-    NotificationHelper.initialize();
-    _scheduleNotificationsForTomorrow();
-    // Set the default screen to show home content.
-    _currentScreen = HomeContentScreen(tasks: tasks);
-  }
-
   void _handleNavigation(String route) {
     setState(() {
       if (route == 'home') {
-        _currentScreen = HomeContentScreen(tasks: tasks);
+        _currentScreen =
+            HomeContentScreen(tasks: tasks, categories: categories);
       } else if (route == 'recycle_bin') {
         _currentScreen = RecycleBinScreen();
       } else if (route == 'categories') {
-        _currentScreen = CategoryListScreen();
+        _currentScreen = CategoryListScreen(categoryService: categoryService);
       }
     });
   }
@@ -74,6 +104,20 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       tasks.add(task);
     });
+  }
+
+  String _getCategoryName(String categoryId) {
+    return categories
+        .firstWhere(
+          (cat) => cat.id == categoryId,
+      orElse: () => Category(
+        id: "0",
+        name: "Unknown",
+        description: "Unknown Category",
+        icon: "",
+      ),
+    )
+        .name;
   }
 
   @override
@@ -89,41 +133,41 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateCategoryScreen()),
+                MaterialPageRoute(builder: (context) => CreateCategoryScreen(categoryService: categoryService,)),
               );
             },
           ),
           IconButton(
-              icon: Stack(
-                children: [
-                  Icon(Icons.notifications),
-                  if (notifications.isNotEmpty)
-                    Positioned(
-                      right: 0,
-                      child: CircleAvatar(
-                        radius: 8,
-                        backgroundColor: Colors.red,
-                        child: Text(
-                          '${notifications.length}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
+            icon: Stack(
+              children: [
+                Icon(Icons.notifications),
+                if (notifications.isNotEmpty)
+                  Positioned(
+                    right: 0,
+                    child: CircleAvatar(
+                      radius: 8,
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '${notifications.length}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
                         ),
                       ),
                     ),
-                ],
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NotificationsScreen(
-                      notifications: notifications,
-                    ),
                   ),
-                );
-              }),
+              ],
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      NotificationsScreen(notifications: notifications),
+                ),
+              );
+            },
+          ),
         ],
       ),
       drawer: SideNavBar(onItemSelected: _handleNavigation),
@@ -162,10 +206,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     for (var task in tasksDueTomorrow) {
       final notification = TaskNotification(
-        task.id,
-        task.dueDate.subtract(Duration(hours: 1)), // Notify 1 hour before
-        'Reminder: ${task.title} is due tomorrow!',
-        task,
+        id: int.parse(task.id),
+        notificationDate: task.dueDate.subtract(Duration(hours: 1)),
+        message: 'Reminder: ${task.title} is due tomorrow!',
+        task: task,
       );
       notification.sendNotification();
       setState(() {
@@ -177,11 +221,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class HomeContentScreen extends StatelessWidget {
   final List<Task> tasks;
+  final List<Category> categories;
 
-  const HomeContentScreen({required this.tasks});
+  const HomeContentScreen({required this.tasks, required this.categories});
 
   @override
   Widget build(BuildContext context) {
+    String? getCategoryName(String? categoryId) {
+      if (categoryId == null) return null;
+      return categories
+          .firstWhere(
+            (cat) => cat.id == categoryId,
+        orElse: () => Category(
+          id: "0",
+          name: "Unknown",
+          description: "Unknown Category",
+          icon: "",
+        ),
+      )
+          .name;
+    }
+
     return Padding(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -195,75 +255,25 @@ class HomeContentScreen extends StatelessWidget {
           Expanded(
             child: tasks.isNotEmpty
                 ? ListView.builder(
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = tasks[index];
-                      return TaskCard(
-                        task: task,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TaskDetailsScreen(task: task),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  )
-                : Center(
-                    child: Text(
-                      "No tasks for today!",
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  ),
-          ),
-          SizedBox(height: 20),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UpcomingTasksScreen(
-                    upcomingTasks: tasks
-                        .where((task) =>
-                            task.dueDate.isAfter(DateTime.now()) &&
-                            task.status == TaskStatus.pending)
-                        .toList(),
-                  ),
-                ),
-              );
-            },
-            child: Text(
-              "Upcoming Tasks",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue),
-            ),
-          ),
-          SizedBox(height: 20),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OverdueTasksScreen(
-                    overdueTasks: tasks
-                        .where((task) =>
-                            task.dueDate.isBefore(DateTime.now()) &&
-                            task.status == TaskStatus.pending)
-                        .toList(),
-                  ),
-                ),
-              );
-            },
-            child: Text(
-              "Overdue Tasks",
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
-            ),
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                final task = tasks[index];
+                return TaskCard(
+                  task: task,
+                  categoryName: getCategoryName(task.getCategoryId()),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TaskDetailsScreen(task: task),
+                      ),
+                    );
+                  },
+                );
+              },
+            )
+                : Center(child: Text('No tasks available')),
           ),
         ],
       ),

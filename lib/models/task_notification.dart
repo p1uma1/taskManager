@@ -2,35 +2,39 @@ import 'task.dart';
 import '../services/NotificationHelper.dart';
 
 class TaskNotification {
-  int _id;
-  DateTime _notificationDate;
-  String _message;
+  int id;
+  DateTime notificationDate;
+  String message;
+  final Task task;
 
-  Task _task;
+  TaskNotification({
+    required this.id,
+    required this.notificationDate,
+    required this.message,
+    required this.task,
+  }) {
+    if (notificationDate.isBefore(DateTime.now())) {
+      throw ArgumentError('Notification date cannot be in the past.');
+    }
+  }
 
-  TaskNotification(this._id, this._notificationDate, this._message, this._task);
-
-  int get id => _id;
-  DateTime get notificationDate => _notificationDate;
-  String get message => _message;
-  Task get task => _task;
-
-  set id(int id) => _id = id;
-  set notificationDate(DateTime notificationDate) =>
-      _notificationDate = notificationDate;
-  set message(String message) => _message = message;
-  set task(Task task) => _task = task;
-
+  /// Schedules a notification for the task
   void sendNotification() {
     NotificationHelper.scheduleNotification(
-      id: _id,
-      title: _task.title,
-      body: _message,
-      scheduledDate: _notificationDate,
+      id: id,
+      title: task.title,
+      body: message,
+      scheduledDate: notificationDate,
     );
   }
 
+  /// Cancels a scheduled notification
   void cancelNotification() {
-    NotificationHelper.cancelNotification(_id);
+    NotificationHelper.cancelNotification(id);
+  }
+
+  @override
+  String toString() {
+    return 'TaskNotification{id: $id, notificationDate: $notificationDate, message: $message, task: ${task.title}}';
   }
 }
