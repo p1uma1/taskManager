@@ -1,28 +1,31 @@
 import 'task.dart';
 
 class RecycleBin {
-  int _id;
-  DateTime _deleteDate;
-  Task _task;
+  final String id;
+  final DateTime deleteDate;
+  final Task task;
 
-  RecycleBin(this._id, this._deleteDate, this._task);
+  RecycleBin({
+    required this.id,
+    required this.deleteDate,
+    required this.task,
+  });
 
-  // Getter methods
-  int get id => _id;
-  DateTime get deleteDate => _deleteDate;
-  Task get task => _task;
-
-  // Setter methods
-  set id(int id) => _id = id;
-  set deleteDate(DateTime deleteDate) => _deleteDate = deleteDate;
-  set task(Task task) => _task = task;
-
-  void restoreTask() {
-    // Logic to restore the task
+  // Convert RecycleBin to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'deleteDate': deleteDate.toIso8601String(),
+      'task': task.toJson(),
+    };
   }
 
-  void permanentlyDeleteTask() {
-    // Logic to permanently delete the task
+  // Create RecycleBin from JSON
+  factory RecycleBin.fromJson(Map<String, dynamic> json) {
+    return RecycleBin(
+      id: json['id'],
+      deleteDate: DateTime.parse(json['deleteDate']),
+      task: Task.fromJson(Map<String, dynamic>.from(json['task'])),
+    );
   }
 }
-

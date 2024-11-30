@@ -1,64 +1,50 @@
 import 'package:flutter/material.dart';
-import '../models/category.dart';
 import '../models/recyclebin.dart';
-import '../models/task.dart';
+import '../repositories/task_repository.dart'; // Ensure this path is correct
 
+class RecycleBinScreen extends StatefulWidget {
+  @override
+  _RecycleBinScreenState createState() => _RecycleBinScreenState();
+}
 
-class RecycleBinScreen extends StatelessWidget {
-  // Example deleted tasks in the recycle bin
-  final List<RecycleBin> recycleBinItems = [
-    RecycleBin(
-      1,  // ID as an integer
-      DateTime.now().subtract(Duration(days: 2)),
-      Task(
-        id: '1',
-        title: "Team Meeting",
-        description: "Discuss project roadmap and timelines.",
-        dueDate: DateTime.now(),
-        dueTime: "10:00 AM",
-        priority: TaskPriority.high,
-        status: TaskStatus.pending,
-        onNotification: false,
-        categoryId: '1', // Firebase-compatible category ID
-        userId: '1', // Firebase-compatible user ID
-      ),
-    ),
-    RecycleBin(
-      2,  // ID as an integer
-      DateTime.now().subtract(Duration(days: 1)),
-      Task(
-        id: '2',
-        title: "Submit Report",
-        description: "Submit the Q3 financial report.",
-        dueDate: DateTime.now(),
-        dueTime: "2:00 PM",
-        priority: TaskPriority.medium,
-        status: TaskStatus.pending,
-        onNotification: false,
-        categoryId: '2', // Firebase-compatible category ID
-        userId: '2', // Firebase-compatible user ID
-      ),
-    ),
-  ];
+class _RecycleBinScreenState extends State<RecycleBinScreen> {
+  final TaskRepository _repository = TaskRepository();
 
-
-
-  void _restoreTask(BuildContext context, RecycleBin binItem) {
-    // Logic to restore the task from the recycle bin
-    print("Restored Task: ${binItem.task.title}");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Task '${binItem.task.title}' restored.")),
-    );
+  Future<List<RecycleBin>> _fetchRecycleBinItems() async {
+    // Replace with actual user ID retrieval logic
+    final userId = "your_user_id"; // Replace with Firebase Auth user ID
+    return await _repository.fetchRecycleBinTasks(userId);
   }
 
-  void _permanentlyDeleteTask(BuildContext context, RecycleBin binItem) {
-    // Logic to permanently delete the task
-    print("Permanently Deleted Task: ${binItem.task.title}");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Task '${binItem.task.title}' permanently deleted."),
-      ),
-    );
+  Future<void> _restoreTask(BuildContext context, RecycleBin binItem) async {
+    try {
+      await _repository.restoreTask(binItem.id);
+      setState(() {}); // Refresh the screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Task '${binItem.task.title}' restored.")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to restore task: $e")),
+      );
+    }
+  }
+
+  Future<void> _permanentlyDeleteTask(
+      BuildContext context, RecycleBin binItem) async {
+    try {
+      await _repository.permanentlyDeleteTask(binItem.id);
+      setState(() {}); // Refresh the screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Task '${binItem.task.title}' permanently deleted."),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to delete task: $e")),
+      );
+    }
   }
 
   @override
@@ -69,50 +55,68 @@ class RecycleBinScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.red,
       ),
-      body: recycleBinItems.isEmpty
-          ? Center(
-        child: Text(
-          "No deleted tasks found.",
-          style: TextStyle(fontSize: 18, color: Colors.grey),
-        ),
-      )
-          : ListView.builder(
-        itemCount: recycleBinItems.length,
-        itemBuilder: (context, index) {
-          final binItem = recycleBinItems[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 4,
-            child: ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text(binItem.task.title),
-              subtitle: Text(
-                  "Deleted on: ${binItem.deleteDate.toLocal().toString().split(' ')[0]}"),
-              trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'restore') {
-                    _restoreTask(context, binItem);
-                  } else if (value == 'delete') {
-                    _permanentlyDeleteTask(context, binItem);
-                  }
-                },
-                itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                      value: 'restore',
-                      child: Text("Restore"),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text("Permanently Delete"),
-                    ),
-                  ];
-                },
+      body: FutureBuilder<List<RecycleBin>>(
+        future: _fetchRecycleBinItems(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Failed to load recycle bin tasks: ${snapshot.error}",
+                style: TextStyle(fontSize: 18, color: Colors.red),
               ),
-            ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Text(
+                "No deleted tasks found.",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+
+          final recycleBinItems = snapshot.data!;
+
+          return ListView.builder(
+            itemCount: recycleBinItems.length,
+            itemBuilder: (context, index) {
+              final binItem = recycleBinItems[index];
+              return Card(
+                margin: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
+                child: ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red),
+                  title: Text(binItem.task.title),
+                  subtitle: Text(
+                      "Deleted on: ${binItem.deleteDate.toLocal().toString().split(' ')[0]}"),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'restore') {
+                        _restoreTask(context, binItem);
+                      } else if (value == 'delete') {
+                        _permanentlyDeleteTask(context, binItem);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return [
+                        PopupMenuItem(
+                          value: 'restore',
+                          child: Text("Restore"),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text("Permanently Delete"),
+                        ),
+                      ];
+                    },
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

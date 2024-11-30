@@ -1,17 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taskmanager_new/models/recyclebin.dart';
 import 'package:taskmanager_new/models/task.dart';
-
 
 class TaskRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Firestore collection name
   final String _collectionName = 'tasks';
+  final String _recycleBinCollection = 'recycle_bin';
 
   // Add a new task
   Future<void> addTask(Task task) async {
     try {
-      await _firestore.collection(_collectionName).doc(task.id).set(task.toJson());
+      await _firestore
+          .collection(_collectionName)
+          .doc(task.id)
+          .set(task.toJson());
     } catch (e) {
       throw Exception('Failed to add task: $e');
     }
@@ -35,10 +39,30 @@ class TaskRepository {
     }
   }
 
+  //fetch recycle tasks
+  Future<List<RecycleBin>> fetchRecycleBinTasks(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection(_recycleBinCollection)
+          .where('task.userId', isEqualTo: userId)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return RecycleBin.fromJson(data);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch recycle bin tasks: $e');
+    }
+  }
+
   // Update an existing task
   Future<void> updateTask(Task task) async {
     try {
-      await _firestore.collection(_collectionName).doc(task.id).update(task.toJson());
+      await _firestore
+          .collection(_collectionName)
+          .doc(task.id)
+          .update(task.toJson());
     } catch (e) {
       throw Exception('Failed to update task: $e');
     }
@@ -50,6 +74,51 @@ class TaskRepository {
       await _firestore.collection(_collectionName).doc(taskId).delete();
     } catch (e) {
       throw Exception('Failed to delete task: $e');
+    }
+  }
+
+  // Move a task to the recycle bin
+  Future<void> moveToRecycleBin(Task task) async {
+    try {
+      final recycleBinEntry = RecycleBin(
+        id: task.id,
+        deleteDate: DateTime.now(),
+        task: task,
+      );
+      await _firestore
+          .collection(_recycleBinCollection)
+          .doc(task.id)
+          .set(recycleBinEntry.toJson());
+      await deleteTask(task.id); // Remove task from the `tasks` collection
+    } catch (e) {
+      throw Exception('Failed to move task to recycle bin: $e');
+    }
+  }
+
+  //restore a task from the recycle bin
+  Future<void> restoreTask(String taskId) async {
+    try {
+      final doc =
+          await _firestore.collection(_recycleBinCollection).doc(taskId).get();
+      if (doc.exists) {
+        final recycleBinEntry = RecycleBin.fromJson(doc.data()!);
+        await addTask(
+            recycleBinEntry.task); // Restore task to `tasks` collection
+        await _firestore.collection(_recycleBinCollection).doc(taskId).delete();
+      } else {
+        throw Exception('Task not found in recycle bin');
+      }
+    } catch (e) {
+      throw Exception('Failed to restore task: $e');
+    }
+  }
+
+  //permenent delete
+  Future<void> permanentlyDeleteTask(String taskId) async {
+    try {
+      await _firestore.collection(_recycleBinCollection).doc(taskId).delete();
+    } catch (e) {
+      throw Exception('Failed to permanently delete task: $e');
     }
   }
 
@@ -76,4 +145,3 @@ class TaskRepository {
     }
   }
 }
-
