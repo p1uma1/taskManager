@@ -21,39 +21,14 @@ class HomeContentScreen extends StatefulWidget {
 }
 
 class _HomeContentScreenState extends State<HomeContentScreen> {
-  late Future<List<Task>> _tasksFuture;  // Change to non-nullable Future<List<Task>>
+  late Future<List<Task>> _tasksFuture;
   late Future<List<Category>> _categoriesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    String? userId = FirebaseAuth.instance.currentUser?.uid;
-
-    // If user is not logged in, navigate to login screen or show error message
-    if (userId == null) {
-      // Handle the case when the user is not logged in
-      // Option 1: Navigate to login screen
-      Navigator.pushReplacementNamed(context, '/login');
-
-      // Option 2: Show an error message (you can use a snackbar or dialog)
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('You must be logged in to access this screen.'))
-      // );
-    } else {
-      // If user is logged in, fetch tasks and categories
-      _tasksFuture = widget.taskService.getTasksForUser(userId) ?? Future.value([]);  // Ensure non-null list
-      _categoriesFuture = widget.categoryService.fetchCategoriesByUserId(userId) ?? Future.value([]);  // Ensure non-null list
-    }
-  }
-
   Future<String?> _getCategoryName(String? categoryId, String userId) async {
     if (categoryId == null) return null;
 
     try {
-      // Fetch categories by userId from the service
       final categories = await widget.categoryService.fetchCategoriesByUserId(userId);
 
-      // Find the category matching the provided categoryId
       final category = categories.firstWhere(
             (cat) => cat.id == categoryId,
         orElse: () => Category(
@@ -67,9 +42,25 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
       return category.name;
     } catch (e) {
-      // Handle errors
       print('Error fetching category name: $e');
       return "Unknown";
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+    // If user is not logged in, navigate to login screen or show error message
+    if (userId == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      // Assign the future to _tasksFuture, using Future.value([]) if null
+      _tasksFuture = widget.taskService.getTasksForUser(userId) ?? Future.value([]);
+
+      // Fetch categories, ensuring it never returns null
+      _categoriesFuture = widget.categoryService.fetchCategoriesByUserId(userId) ?? Future.value([]);
     }
   }
 
@@ -162,5 +153,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     );
   }
 }
+
+
 
 

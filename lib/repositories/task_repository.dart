@@ -22,7 +22,7 @@ class TaskRepository {
   }
 
   // Fetch tasks for a specific user
-  Future<List<Task>?> fetchTasks(String userId) async {
+  Future<List<Task>> fetchTasks(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_collectionName)

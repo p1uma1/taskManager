@@ -14,9 +14,8 @@ class TaskService {
   }
 
   // Get all tasks for a specific user
-  Future<List<Task>?> getTasksForUser(String userId) async {
+  Future<List<Task>> getTasksForUser(String userId) async {
     final tasks = await _taskRepository.fetchTasks(userId);
-    if (tasks == null) return null;
     // Automatically update statuses based on due dates
     for (var task in tasks) {
       if (task.status == TaskStatus.pending ||
