@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '../../models/category.dart';
 import '../repositories/category_repository.dart';
 
@@ -10,24 +9,51 @@ class CategoryService {
 
   // Fetch all categories (default + user-specific)
   Stream<List<Category>> getAllCategoriesStream() {
-    return getAllCategoriesStream();
+    return _getCategoriesStream();
   }
 
-
-  Future<List<Category>> getAllCategories() async {
+  // Private method to get categories stream (avoids recursion)
+  Stream<List<Category>> _getCategoriesStream() async* {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      //user
+
       if (user == null) {
         throw Exception("User not logged in");
       }
+
       final userId = user.uid;
 
-      // default + user defined
+      // Fetch default categories (no user-specific filter)
       final defaultCategories = await _repository.fetchCategoriesByUserId(null);
+
+      // Fetch user-specific categories
       final userCategories = await _repository.fetchCategoriesByUserId(userId);
 
-      //combine
+      // Combine the categories and yield the result as a stream
+      yield [...defaultCategories, ...userCategories];
+    } catch (e) {
+      throw Exception("Failed to fetch categories: $e");
+    }
+  }
+
+  // Fetch all categories without a stream (returns a List)
+  Future<List<Category>> getAllCategories() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        throw Exception("User not logged in");
+      }
+
+      final userId = user.uid;
+
+      // Fetch default categories (no user-specific filter)
+      final defaultCategories = await _repository.fetchCategoriesByUserId(null);
+
+      // Fetch user-specific categories
+      final userCategories = await _repository.fetchCategoriesByUserId(userId);
+
+      // Combine and return the categories
       return [...defaultCategories, ...userCategories];
     } catch (e) {
       throw Exception("Failed to fetch categories: $e");

@@ -127,11 +127,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("Task Manager"),
         centerTitle: true,
+
       ),
       body: _currentScreen, // Display the current screen
       drawer: SideNavBar(onItemSelected: _handleNavigation),
     );
   }
+
 
   void _addNewTask(Task task) {
     setState(() {
@@ -139,5 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+
 }
+
 

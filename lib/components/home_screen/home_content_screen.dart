@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:taskmanager_new/components/task_card.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/task.dart';
+import 'package:taskmanager_new/screens/category/create_category.dart';
 import 'package:taskmanager_new/screens/task/add_task_screen.dart';
 import 'package:taskmanager_new/screens/task/task_details_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
@@ -52,6 +53,23 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
+        actions: [
+          // Add Category Icon Button
+          IconButton(
+            icon: Icon(Icons.add_box), // You can change the icon as per your preference
+            onPressed: () {
+              // Navigate to CreateCategoryScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateCategoryScreen(
+                    categoryService: widget.categoryService,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(20),

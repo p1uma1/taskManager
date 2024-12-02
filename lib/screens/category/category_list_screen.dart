@@ -4,9 +4,8 @@ import '../../models/category.dart';
 import 'category_details.dart';
 
 class CategoryListScreen extends StatelessWidget {
-  final CategoryService categoryService; // Dependency injection for the service
+  final CategoryService categoryService;
 
-  // Constructor to pass the CategoryService
   CategoryListScreen({required this.categoryService});
 
   @override
@@ -23,17 +22,19 @@ class CategoryListScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.blueAccent.shade100,
       ),
-      body: FutureBuilder(
-        future: categoryService.getAllCategories(), // Use service to fetch categories
+      body: StreamBuilder<List<Category>>(
+        stream: categoryService.getAllCategoriesStream(), // Stream of categories
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator(
-                    color: Colors.blueAccent.shade200));
+            return Center(child: CircularProgressIndicator(color: Colors.blueAccent.shade200));
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error loading categories'));
           }
 
           if (snapshot.hasData) {
-            final categories = snapshot.data as List<Category>;
+            final categories = snapshot.data!;
 
             return ListView.builder(
               padding: EdgeInsets.all(8),
@@ -50,8 +51,7 @@ class CategoryListScreen extends StatelessWidget {
                     contentPadding: EdgeInsets.all(16),
                     title: Text(
                       category.name,
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
                       category.description,
@@ -63,13 +63,16 @@ class CategoryListScreen extends StatelessWidget {
                     ),
                     trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryDetails(category: category, categoryService: categoryService),
-                        ),
-                      );
+                      // Ensure no recursive rebuilding or navigation
+                      if (ModalRoute.of(context)?.settings.name != '/categoryDetails') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CategoryDetails(category: category, categoryService: categoryService),
+                          ),
+                        );
+                      }
                     },
                   ),
                 );
@@ -88,3 +91,5 @@ class CategoryListScreen extends StatelessWidget {
     );
   }
 }
+
+
