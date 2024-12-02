@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 enum TaskStatus { pending, inProgress, completed, overdue }
+
 enum TaskPriority { low, medium, high }
 
 class Task {
@@ -26,14 +27,9 @@ class Task {
     this.onNotification = false,
     this.categoryId, // Nullable Category ID
     required this.userId,
-  }) {
-    // Automatically initialize the status based on the dueDate
-    if (status == TaskStatus.pending || status == TaskStatus.overdue) {
-      status = _determineStatus();
-    }
-  }
+  });
 
-  // Determine status based on the current date and dueDate
+  /// Automatically determine status based on the current date and dueDate
   TaskStatus _determineStatus() {
     final now = DateTime.now();
     if (now.isAfter(dueDate)) {
@@ -42,8 +38,9 @@ class Task {
     return TaskStatus.pending;
   }
 
-  // CopyWith method for creating a new Task instance with modified properties
+  /// Factory to create a new `Task` with updated fields
   Task copyWith({
+    String? id,
     String? title,
     String? description,
     DateTime? dueDate,
@@ -52,22 +49,23 @@ class Task {
     TaskStatus? status,
     bool? onNotification,
     String? categoryId,
+    String? userId,
   }) {
     return Task(
-      id: id, // ID is immutable
+      id: id ?? this.id, // Allow changing ID only if provided
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
       dueTime: dueTime ?? this.dueTime,
       priority: priority ?? this.priority,
-      status: status ?? this.status,
+      status: status ?? this._determineStatus(), // Auto-determine status
       onNotification: onNotification ?? this.onNotification,
       categoryId: categoryId ?? this.categoryId,
-      userId: userId, // User ID is immutable
+      userId: userId ?? this.userId, // Allow user ID change only if needed
     );
   }
 
-  // Convert Task to JSON for storage
+  /// Convert `Task` to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -75,42 +73,29 @@ class Task {
       'description': description,
       'dueDate': dueDate.toIso8601String(),
       'dueTime': dueTime,
-      'priority': priority.toString(),
-      'status': status.toString(),
+      'priority': priority.name, // Store as string (name)
+      'status': status.name, // Store as string (name)
       'onNotification': onNotification,
       'categoryId': categoryId, // Store category reference if exists
       'userId': userId,
     };
   }
 
-  String? getCategoryId() {
-    return categoryId;
-  }
-
-  // Create Task from JSON
+  /// Create `Task` from JSON
   factory Task.fromJson(Map<String, dynamic> json) {
-    // Parse the task from JSON
-    final task = Task(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      dueDate: DateTime.parse(json['dueDate']),
-      dueTime: json['dueTime'],
-      priority: TaskPriority.values
-          .firstWhere((e) => e.toString() == json['priority']),
-      status: TaskStatus.values
-          .firstWhere((e) => e.toString() == json['status']),
-      onNotification: json['onNotification'],
-      categoryId: json['categoryId'], // Retrieve nullable category reference
-      userId: json['userId'],
+    return Task(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      dueDate: DateTime.parse(json['dueDate'] as String),
+      dueTime: json['dueTime'] as String,
+      priority:
+          TaskPriority.values.firstWhere((e) => e.name == json['priority']),
+      status: TaskStatus.values.firstWhere((e) => e.name == json['status']),
+      onNotification: json['onNotification'] as bool,
+      categoryId: json['categoryId'] as String?,
+      userId: json['userId'] as String,
     );
-
-    // Reinitialize the status based on the dueDate if needed
-    if (task.status == TaskStatus.pending || task.status == TaskStatus.overdue) {
-      task.status = task._determineStatus();
-    }
-
-    return task;
   }
 
   @override
@@ -118,4 +103,3 @@ class Task {
     return 'Task(id: $id, title: $title, categoryId: $categoryId, status: $status, dueDate: $dueDate)';
   }
 }
-

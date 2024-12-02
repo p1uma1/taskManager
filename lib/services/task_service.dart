@@ -40,4 +40,9 @@ class TaskService {
   Future<void> deleteTask(String taskId) async {
     await _taskRepository.deleteTask(taskId);
   }
+
+  //move to recycle bin
+  Future<void> moveToRecycleBin(Task task) async {
+    await _taskRepository.moveToRecycleBin(task);
+  }
 }

@@ -14,7 +14,7 @@ class TaskDetailsScreen extends StatelessWidget {
 
   void _deleteTask(BuildContext context) async {
     try {
-      await taskService.deleteTask(task.id);
+      await taskService.moveToRecycleBin(task);
       Navigator.of(context).pop(); // Close details screen
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Task "${task.title}" deleted successfully!')),
@@ -22,7 +22,8 @@ class TaskDetailsScreen extends StatelessWidget {
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete task. Please try again later.'),
+          content: Text('Failed to delete task. Please try again later.' +
+              error.toString()),
           backgroundColor: Colors.red,
         ),
       );
