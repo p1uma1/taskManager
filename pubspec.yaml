@@ -43,7 +43,7 @@ dependencies:
   google_sign_in: ^6.2.0
   sign_in_button: ^3.0.0
   intl: ^0.18.0
-
+  google_fonts: ^4.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
