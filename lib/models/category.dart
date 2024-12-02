@@ -3,6 +3,7 @@ class Category {
   final String name;
   final String description;
   final String icon;
+  final String userId; // New field to associate the category with a user
 
   // Constructor
   Category({
@@ -10,6 +11,7 @@ class Category {
     required this.name,
     required this.description,
     required this.icon,
+    required this.userId, // Include userId in the constructor
   });
 
   // Convert Category to JSON for storage in Firestore
@@ -19,6 +21,7 @@ class Category {
       'name': name,
       'description': description,
       'icon': icon,
+      'userId': userId, // Include userId in the JSON representation
     };
   }
 
@@ -29,11 +32,12 @@ class Category {
       name: json['name'],
       description: json['description'],
       icon: json['icon'],
+      userId: json['userId'], // Map userId from JSON
     );
   }
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, description: $description, icon: $icon)';
+    return 'Category(id: $id, name: $name, description: $description, icon: $icon, userId: $userId)';
   }
 }

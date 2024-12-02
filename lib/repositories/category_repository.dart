@@ -20,6 +20,40 @@ class CategoryRepository {
     }
   }
 
+  // Fetch all categories by userId
+  Future<List<Category>> fetchCategoriesByUserId(String userId) async {
+    try {
+      final querySnapshot = await _categoryCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+      return querySnapshot.docs
+          .map((doc) => Category.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception('Error fetching categories for userId $userId: $e');
+    }
+  }
+
+  // Delete all categories by userId
+  Future<void> deleteCategoriesByUserId(String userId) async {
+    try {
+      final querySnapshot = await _categoryCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      // Use a batch for multiple deletions
+      WriteBatch batch = _firestore.batch();
+      for (var doc in querySnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Commit the batch
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Error deleting categories for userId $userId: $e');
+    }
+  }
+
   // Fetch a single category by ID
   Future<Category?> fetchCategoryById(String id) async {
     try {

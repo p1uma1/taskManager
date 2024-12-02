@@ -201,18 +201,34 @@ class HomeContentScreen extends StatelessWidget {
 
   const HomeContentScreen({required this.tasks, required this.categories});
 
-  String? _getCategoryName(String? categoryId) {
+  Future<String?> _getCategoryName(String? categoryId, String userId) async {
     if (categoryId == null) return null;
-    return categories.firstWhere(
-          (cat) => cat.id == categoryId,
-      orElse: () => Category(
-        id: "0",
-        name: "Unknown",
-        description: "Unknown Category",
-        icon: "",
-      ),
-    ).name;
+
+    try {
+      // Fetch categories by userId from the service
+
+      final categories = await categoryService.fetchCategoriesByUserId(userId);
+
+      // Find the category matching the provided categoryId
+      final category = categories.firstWhere(
+            (cat) => cat.id == categoryId,
+        orElse: () => Category(
+          id: "0",
+          userId: "0",
+          name: "Unknown",
+          description: "Unknown Category",
+          icon: "",
+        ),
+      );
+
+      return category.name;
+    } catch (e) {
+      // Handle errors, such as network issues or service errors
+      print('Error fetching category name: $e');
+      return "Unknown";
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -260,5 +276,9 @@ class HomeContentScreen extends StatelessWidget {
         ],
       ),
     );
+
+
+
+
   }
 }

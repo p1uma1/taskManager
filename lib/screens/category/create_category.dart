@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart'; // Import your Category class
 
-
 class CreateCategoryScreen extends StatefulWidget {
-
   final CategoryService categoryService;
 
   CreateCategoryScreen({required this.categoryService}); // Passing service as a parameter
@@ -33,26 +32,44 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
   // Function to save category using the Category model's addCategory method
   void _saveCategory() async {
     if (_formKey.currentState!.validate()) {
+      // Get the current user's ID from Firebase Authentication
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not logged in!')),
+        );
+        return;
+      }
+
+      final userId = currentUser.uid;
+
       // Create a new Category object
       final newCategory = Category(
-        id: _idController.text,  // Assuming the ID is a string
+        id: _idController.text, // Assuming the ID is a string
         name: _nameController.text,
         description: _descriptionController.text,
         icon: _selectedIcon,
+        userId: userId, // Assign the Firebase Auth UID
       );
 
-      // Call the CategoryService to add the category
-      await widget.categoryService.createCategory(newCategory);
+      try {
+        // Call the CategoryService to add the category
+        await widget.categoryService.createCategory(newCategory);
 
-      // Clear the form
-      _idController.clear();
-      _nameController.clear();
-      _descriptionController.clear();
+        // Clear the form
+        _idController.clear();
+        _nameController.clear();
+        _descriptionController.clear();
 
-      // Show confirmation
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Category created successfully!')),
-      );
+        // Show confirmation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Category created successfully!')),
+        );
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create category: $error')),
+        );
+      }
     }
   }
 
@@ -84,9 +101,6 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter an ID';
-                      }
-                      if (int.tryParse(value) == null) {
-                        return 'ID must be a number';
                       }
                       return null;
                     },
@@ -175,8 +189,8 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 12),
                         textStyle: TextStyle(fontSize: 16),
                       ),
                     ),
