@@ -1,3 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:taskmanager_new/models/recyclebin.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/repositories/task_repository.dart';
 
@@ -44,5 +47,24 @@ class TaskService {
   //move to recycle bin
   Future<void> moveToRecycleBin(Task task) async {
     await _taskRepository.moveToRecycleBin(task);
+  }
+
+  //fetch from recycleBin
+  Future<List<RecycleBin>> fetchRecycleBinItems() async {
+    // Replace with actual user ID retrieval logic
+    final user = FirebaseAuth.instance.currentUser;
+    final userId = user?.uid ?? '';
+    // Replace with Firebase Auth user ID
+    return await _taskRepository.fetchRecycleBinTasks(userId);
+  }
+
+  //restore tasks
+
+  Future<void> restoreTask(RecycleBin binItem) async {
+    await _taskRepository.restoreTask(binItem.id);
+  }
+
+  Future<void> permanentlyDeleteTask(RecycleBin binItem) async {
+    await _taskRepository.permanentlyDeleteTask(binItem.id);
   }
 }

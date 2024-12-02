@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/services/task_service.dart';
 import '../models/recyclebin.dart';
-import '../repositories/task_repository.dart'; // Ensure this path is correct
+// import '../repositories/task_repository.dart'; // Ensure this path is correct
 
 class RecycleBinScreen extends StatefulWidget {
   @override
@@ -8,43 +9,12 @@ class RecycleBinScreen extends StatefulWidget {
 }
 
 class _RecycleBinScreenState extends State<RecycleBinScreen> {
-  final TaskRepository _repository = TaskRepository();
+  final TaskService _taskService = TaskService();
+  // final TaskRepository _repository = TaskRepository();
 
-  Future<List<RecycleBin>> _fetchRecycleBinItems() async {
-    // Replace with actual user ID retrieval logic
-    final userId = "your_user_id"; // Replace with Firebase Auth user ID
-    return await _repository.fetchRecycleBinTasks(userId);
-  }
-
-  Future<void> _restoreTask(BuildContext context, RecycleBin binItem) async {
-    try {
-      await _repository.restoreTask(binItem.id);
-      setState(() {}); // Refresh the screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Task '${binItem.task.title}' restored.")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to restore task: $e")),
-      );
-    }
-  }
-
-  Future<void> _permanentlyDeleteTask(
-      BuildContext context, RecycleBin binItem) async {
-    try {
-      await _repository.permanentlyDeleteTask(binItem.id);
-      setState(() {}); // Refresh the screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Task '${binItem.task.title}' permanently deleted."),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to delete task: $e")),
-      );
-    }
+  //reload
+  Future<void> _refreshRecycleBinItems() async {
+    setState(() {});
   }
 
   @override
@@ -56,7 +26,8 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
         backgroundColor: Colors.red,
       ),
       body: FutureBuilder<List<RecycleBin>>(
-        future: _fetchRecycleBinItems(),
+        // future: fetchRecycleBinItems(),
+        future: _taskService.fetchRecycleBinItems(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -94,12 +65,25 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                   subtitle: Text(
                       "Deleted on: ${binItem.deleteDate.toLocal().toString().split(' ')[0]}"),
                   trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
+                    onSelected: (value) async {
                       if (value == 'restore') {
-                        _restoreTask(context, binItem);
+                        // _restoreTask(context, binItem);
+                        await _taskService.restoreTask(binItem);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  "Task '${binItem.task.title}' restored.")),
+                        );
                       } else if (value == 'delete') {
-                        _permanentlyDeleteTask(context, binItem);
+                        // _permanentlyDeleteTask(context, binItem);
+                        await _taskService.permanentlyDeleteTask(binItem);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  "Task '${binItem.task.title}' permanently deleted.")),
+                        );
                       }
+                      await _refreshRecycleBinItems();
                     },
                     itemBuilder: (BuildContext context) {
                       return [
