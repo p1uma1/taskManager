@@ -8,38 +8,47 @@ class CategoryRepository {
   CollectionReference get _categoryCollection =>
       _firestore.collection('categories');
 
-  // Fetch all categories
-  Future<List<Category>> fetchAllCategories() async {
-    try {
-      final querySnapshot = await _categoryCollection.get();
-      return querySnapshot.docs
-          .map((doc) => Category.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      throw Exception('Error fetching categories: $e');
-    }
-  }
+  // // Fetch all categories
+  // Future<List<Category>> fetchAllCategories() async {
+  //   try {
+  //     final querySnapshot = await _categoryCollection.get();
+  //     return querySnapshot.docs
+  //         .map((doc) => Category.fromJson(doc.data() as Map<String, dynamic>))
+  //         .toList();
+  //   } catch (e) {
+  //     throw Exception('Error fetching categories: $e');
+  //   }
+  // }
 
   // Fetch all categories by userId
-  Future<List<Category>> fetchCategoriesByUserId(String userId) async {
+  Future<List<Category>> fetchCategoriesByUserId(String? userId) async {
     try {
-      final querySnapshot = await _categoryCollection
-          .where('userId', isEqualTo: userId)
-          .get();
-      return querySnapshot.docs
-          .map((doc) => Category.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
+      Query query = _categoryCollection;
+
+      if (userId != null) {
+        // Fetch user-specific categories
+        query = query.where('userId', isEqualTo: userId);
+      } else {
+        // Fetch default categories
+        query = query.where('userId', isNull: true);
+      }
+
+      final querySnapshot = await query.get();
+
+      return querySnapshot.docs.map((doc) {
+        return Category.fromJson(
+            doc.data() as Map<String, dynamic>, doc.id); // Pass doc.id
+      }).toList();
     } catch (e) {
-      throw Exception('Error fetching categories for userId $userId: $e');
+      throw Exception('Error fetching categories: $e');
     }
   }
 
   // Delete all categories by userId
   Future<void> deleteCategoriesByUserId(String userId) async {
     try {
-      final querySnapshot = await _categoryCollection
-          .where('userId', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await _categoryCollection.where('userId', isEqualTo: userId).get();
 
       // Use a batch for multiple deletions
       WriteBatch batch = _firestore.batch();
@@ -54,18 +63,18 @@ class CategoryRepository {
     }
   }
 
-  // Fetch a single category by ID
-  Future<Category?> fetchCategoryById(String id) async {
-    try {
-      final doc = await _categoryCollection.doc(id).get();
-      if (doc.exists) {
-        return Category.fromJson(doc.data() as Map<String, dynamic>);
-      }
-      return null;
-    } catch (e) {
-      throw Exception('Error fetching category: $e');
-    }
-  }
+  // // Fetch a single category by ID
+  // Future<Category?> fetchCategoryById(String id) async {
+  //   try {
+  //     final doc = await _categoryCollection.doc(id).get();
+  //     if (doc.exists) {
+  //       return Category.fromJson(doc.data() as Map<String, dynamic>);
+  //     }
+  //     return null;
+  //   } catch (e) {
+  //     throw Exception('Error fetching category: $e');
+  //   }
+  // }
 
   // Add a new category
   Future<void> addCategory(Category category) async {

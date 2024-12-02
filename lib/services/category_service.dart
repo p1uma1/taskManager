@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../models/category.dart';
 import '../repositories/category_repository.dart';
 
@@ -6,23 +8,25 @@ class CategoryService {
 
   CategoryService(this._repository);
 
-  // Fetch all categories
+  // Fetch all categories (default + user-specific)
   Future<List<Category>> getAllCategories() async {
-    return await _repository.fetchAllCategories();
-  }
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      //user
+      if (user == null) {
+        throw Exception("User not logged in");
+      }
+      final userId = user.uid;
 
-  Future<List<Category>> fetchCategoriesByUserId(String userId) async {
-    return await _repository.fetchCategoriesByUserId(userId);
-  }
+      // default + user defined
+      final defaultCategories = await _repository.fetchCategoriesByUserId(null);
+      final userCategories = await _repository.fetchCategoriesByUserId(userId);
 
-  // Fetch a category by ID
-  Future<Category?> getCategoryById(String id) async {
-    return await _repository.fetchCategoryById(id);
-  }
-
-  // Fetch all categories by userId
-  Future<List<Category>> getCategoriesByUserId(String userId) async {
-    return await _repository.fetchCategoriesByUserId(userId);
+      //combine
+      return [...defaultCategories, ...userCategories];
+    } catch (e) {
+      throw Exception("Failed to fetch categories: $e");
+    }
   }
 
   // Add a category
@@ -38,10 +42,5 @@ class CategoryService {
   // Delete a category
   Future<void> deleteCategory(String id) async {
     await _repository.deleteCategory(id);
-  }
-
-  // Delete all categories by userId
-  Future<void> deleteCategoriesByUserId(String userId) async {
-    await _repository.deleteCategoriesByUserId(userId);
   }
 }

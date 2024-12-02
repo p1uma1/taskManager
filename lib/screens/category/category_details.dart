@@ -3,11 +3,9 @@ import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 import 'category_update.dart';
 
-
 class CategoryDetails extends StatelessWidget {
   final Category category;
-
-  final CategoryService categoryService; // Pass CategoryService
+  final CategoryService categoryService;
 
   // Constructor to pass the Category object and CategoryService
   CategoryDetails({required this.category, required this.categoryService});
@@ -15,8 +13,8 @@ class CategoryDetails extends StatelessWidget {
   // Function to handle category deletion
   Future<void> _deleteCategory(BuildContext context) async {
     try {
-      await categoryService.deleteCategory(category.id); // Delete the category
-      Navigator.pop(context); // Pop the current screen after deletion
+      await categoryService.deleteCategory(category.id);
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Category deleted successfully!')),
       );
@@ -32,13 +30,16 @@ class CategoryDetails extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CategoryUpdate(category: category, categoryService:categoryService ),
+        builder: (context) => CategoryUpdate(
+            category: category, categoryService: categoryService),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDefaultCategory = category.userId == null;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Category Details'),
@@ -47,7 +48,8 @@ class CategoryDetails extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 8,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -73,18 +75,35 @@ class CategoryDetails extends StatelessWidget {
                   'Description: ${category.description}',
                   style: TextStyle(fontSize: 16),
                 ),
+                SizedBox(height: 8),
+
+                // Display if it is a default category
+                if (isDefaultCategory)
+                  Text(
+                    'This is a default category.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blueGrey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 SizedBox(height: 20),
 
                 // Row with buttons for Update and Delete
                 Row(
                   children: [
-                    // Update button
+                    // Update button (disabled for default categories)
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _updateCategory(context),
-                        child: Text('Update', style: TextStyle(color: Colors.black)),
+                        onPressed: isDefaultCategory
+                            ? null
+                            : () => _updateCategory(context),
+                        child: Text('Update',
+                            style: TextStyle(color: Colors.black)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent.shade100,
+                          backgroundColor: isDefaultCategory
+                              ? Colors.grey
+                              : Colors.blueAccent.shade100,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -93,13 +112,18 @@ class CategoryDetails extends StatelessWidget {
                     ),
                     SizedBox(width: 10),
 
-                    // Delete button
+                    // Delete button (disabled for default categories)
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _deleteCategory(context),
-                        child: Text('Delete', style: TextStyle(color: Colors.black)),
+                        onPressed: isDefaultCategory
+                            ? null
+                            : () => _deleteCategory(context),
+                        child: Text('Delete',
+                            style: TextStyle(color: Colors.black)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
+                          backgroundColor: isDefaultCategory
+                              ? Colors.grey
+                              : Colors.redAccent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

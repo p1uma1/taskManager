@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taskmanager_new/components/home_screen/home_content_screen.dart';
@@ -54,7 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _fetchData() async {
     if (userId != null) {
       try {
-        final fetchedCategories = await widget.categoryService.fetchCategoriesByUserId(userId!);
+        final fetchedCategories =
+            await widget.categoryService.getAllCategories();
         final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
 
         setState(() {
@@ -86,9 +87,10 @@ class _HomeScreenState extends State<HomeScreen> {
           taskService: widget.taskService,
         );
       } else if (route == 'recycle_bin') {
-        _currentScreen = RecycleBinScreen();  // Add this screen if required
+        _currentScreen = RecycleBinScreen(); // Add this screen if required
       } else if (route == 'categories') {
-        _currentScreen = CategoryListScreen(categoryService: widget.categoryService);
+        _currentScreen =
+            CategoryListScreen(categoryService: widget.categoryService);
       }
     });
   }
@@ -139,14 +141,16 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => NotificationsScreen(notifications: notifications),
+                  builder: (context) =>
+                      NotificationsScreen(notifications: notifications),
                 ),
               );
             },
           ),
         ],
       ),
-      drawer: SideNavBar( // Replace your custom drawer with the imported SideNavBar
+      drawer: SideNavBar(
+        // Replace your custom drawer with the imported SideNavBar
         onItemSelected: _handleNavigation, // Pass the navigation function
       ),
       floatingActionButton: FloatingActionButton(
