@@ -15,6 +15,7 @@ import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 import 'package:taskmanager_new/models/category.dart' as CategoryModel;
+import 'package:taskmanager_new/components/side_nav_bar.dart'; // Import SideNavBar
 
 class HomeScreen extends StatefulWidget {
   final CategoryRepository categoryRepository;
@@ -145,39 +146,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              child: Text('Task Manager'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              title: const Text('Home'),
-              onTap: () {
-                _handleNavigation('home');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Categories'),
-              onTap: () {
-                _handleNavigation('categories');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Recycle Bin'),
-              onTap: () {
-                _handleNavigation('recycle_bin');
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
+      drawer: SideNavBar( // Replace your custom drawer with the imported SideNavBar
+        onItemSelected: _handleNavigation, // Pass the navigation function
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
