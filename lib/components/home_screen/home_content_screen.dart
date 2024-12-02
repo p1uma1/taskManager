@@ -27,10 +27,11 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     if (categoryId == null) return null;
 
     try {
-      final categories = await widget.categoryService.fetchCategoriesByUserId(userId);
+      final categories =
+          await widget.categoryService.fetchCategoriesByUserId(userId);
 
       final category = categories.firstWhere(
-            (cat) => cat.id == categoryId,
+        (cat) => cat.id == categoryId,
         orElse: () => Category(
           id: "0",
           userId: "0",
@@ -57,10 +58,13 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       // Assign the future to _tasksFuture, using Future.value([]) if null
-      _tasksFuture = widget.taskService.getTasksForUser(userId) ?? Future.value([]);
+      _tasksFuture =
+          widget.taskService.getTasksForUser(userId) ?? Future.value([]);
 
       // Fetch categories, ensuring it never returns null
-      _categoriesFuture = widget.categoryService.fetchCategoriesByUserId(userId) ?? Future.value([]);
+      _categoriesFuture =
+          widget.categoryService.fetchCategoriesByUserId(userId) ??
+              Future.value([]);
     }
   }
 
@@ -97,12 +101,14 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                 return FutureBuilder<List<Category>>(
                   future: _categoriesFuture,
                   builder: (context, categorySnapshot) {
-                    if (categorySnapshot.connectionState == ConnectionState.waiting) {
+                    if (categorySnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
                     }
 
                     if (categorySnapshot.hasError) {
-                      return Center(child: Text('Error: ${categorySnapshot.error}'));
+                      return Center(
+                          child: Text('Error: ${categorySnapshot.error}'));
                     }
 
                     final categories = categorySnapshot.data ?? [];
@@ -113,16 +119,23 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                         final task = tasks[index];
 
                         return FutureBuilder<String?>(
-                          future: _getCategoryName(task.categoryId, FirebaseAuth.instance.currentUser?.uid ?? "userId_placeholder"),
+                          future: _getCategoryName(
+                              task.categoryId,
+                              FirebaseAuth.instance.currentUser?.uid ??
+                                  "userId_placeholder"),
                           builder: (context, categoryNameSnapshot) {
-                            if (categoryNameSnapshot.connectionState == ConnectionState.waiting) {
+                            if (categoryNameSnapshot.connectionState ==
+                                ConnectionState.waiting) {
                               return Center(child: CircularProgressIndicator());
                             }
                             if (categoryNameSnapshot.hasError) {
-                              return Center(child: Text('Error: ${categoryNameSnapshot.error}'));
+                              return Center(
+                                  child: Text(
+                                      'Error: ${categoryNameSnapshot.error}'));
                             }
 
-                            final categoryName = categoryNameSnapshot.data ?? "Unknown";
+                            final categoryName =
+                                categoryNameSnapshot.data ?? "Unknown";
 
                             return TaskCard(
                               task: task,
@@ -153,7 +166,3 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     );
   }
 }
-
-
-
-
