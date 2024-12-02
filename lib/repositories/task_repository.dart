@@ -12,10 +12,18 @@ class TaskRepository {
   // Add a new task
   Future<void> addTask(Task task) async {
     try {
+      /*
       await _firestore
           .collection(_collectionName)
           .doc(task.id)
           .set(task.toJson());
+          */
+
+      final docRef = _firestore.collection(_collectionName).doc();
+
+      final updatedTask = task.copyWith(id: docRef.id);
+
+      await docRef.set(updatedTask.toJson());
     } catch (e) {
       throw Exception('Failed to add task: $e');
     }
@@ -80,16 +88,22 @@ class TaskRepository {
   // Move a task to the recycle bin
   Future<void> moveToRecycleBin(Task task) async {
     try {
+      final taskId = task.id.isNotEmpty
+          ? task.id
+          : _firestore.collection(_collectionName).doc().id;
       final recycleBinEntry = RecycleBin(
-        id: task.id,
+        id: taskId,
         deleteDate: DateTime.now(),
-        task: task,
+        task: task.copyWith(id: taskId),
       );
       await _firestore
           .collection(_recycleBinCollection)
-          .doc(task.id)
+          .doc(taskId)
           .set(recycleBinEntry.toJson());
-      await deleteTask(task.id); // Remove task from the `tasks` collection
+      await _firestore
+          .collection(_collectionName)
+          .doc(task.id)
+          .delete(); // Remove task from the `tasks` collection
     } catch (e) {
       throw Exception('Failed to move task to recycle bin: $e');
     }

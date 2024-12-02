@@ -3,6 +3,7 @@ import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class AddTaskScreen extends StatefulWidget {
   @override
@@ -82,7 +83,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
     if (pickedTime != null) {
       setState(() {
-        _dueTime = '${pickedTime.hour}:${pickedTime.minute} ${pickedTime.period.toString().split('.').last}';
+        _dueTime =
+            '${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')} '
+            '${pickedTime.period == DayPeriod.am ? 'AM' : 'PM'}';
       });
     }
   }
@@ -130,45 +133,49 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         title: Text('Add Task'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Title'),
-                  validator: (value) =>
-                  value == null || value.isEmpty ? 'Please enter a title' : null,
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter a title'
+                      : null,
                   onSaved: (value) => _title = value!,
                 ),
+                SizedBox(height: 16),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Description'),
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
                   onSaved: (value) => _description = value!,
                 ),
-                Row(
-                  children: [
-                    Text(
-                      'Due Date: ${_dueDate.toLocal()}'.split(' ')[0],
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: _pickDueDate,
-                    ),
-                  ],
+                SizedBox(height: 16),
+                ListTile(
+                  title: Text(
+                    'Due Date: ${DateFormat.yMMMd().format(_dueDate)}',
+                  ),
+                  trailing: OutlinedButton.icon(
+                    onPressed: _pickDueDate,
+                    icon: Icon(Icons.calendar_today),
+                    label: Text('Select'),
+                  ),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      'Due Time: $_dueTime',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.access_time),
-                      onPressed: _pickDueTime,
-                    ),
-                  ],
+                ListTile(
+                  title: Text('Due Time: $_dueTime'),
+                  trailing: OutlinedButton.icon(
+                    onPressed: _pickDueTime,
+                    icon: Icon(Icons.access_time),
+                    label: Text('Select'),
+                  ),
                 ),
                 DropdownButtonFormField<TaskPriority>(
                   value: _priority,
@@ -176,10 +183,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   items: TaskPriority.values
                       .map(
                         (priority) => DropdownMenuItem(
-                      value: priority,
-                      child: Text(priority.toString().split('.').last),
-                    ),
-                  )
+                          value: priority,
+                          child: Text(priority.toString().split('.').last),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -187,16 +194,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     });
                   },
                 ),
+                SizedBox(height: 16),
                 DropdownButtonFormField<Category>(
                   value: _selectedCategory,
                   decoration: InputDecoration(labelText: 'Category'),
                   items: _categories
                       .map(
                         (category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category.name),
-                    ),
-                  )
+                          value: category,
+                          child: Text(category.name),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -204,10 +212,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     });
                   },
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _saveTask,
-                  child: Text('Save Task'),
+                SizedBox(height: 24),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _saveTask,
+                    child: Text('Save Task'),
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
                 ),
               ],
             ),
