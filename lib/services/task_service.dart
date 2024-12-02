@@ -16,6 +16,10 @@ class TaskService {
     await _taskRepository.getUpcomingTasks(userId);
   }
 
+  Stream<List<Task>> getTaskStreamForUser(String userId) {
+    return _taskRepository.getTasksStreamForUser(userId);
+  }
+
   // Get all tasks for a specific user
   Future<List<Task>> getTasksForUser(String userId) async {
     final tasks = await _taskRepository.fetchTasks(userId);

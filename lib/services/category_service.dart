@@ -9,6 +9,11 @@ class CategoryService {
   CategoryService(this._repository);
 
   // Fetch all categories (default + user-specific)
+  Stream<List<Category>> getAllCategoriesStream() {
+    return getAllCategoriesStream();
+  }
+
+
   Future<List<Category>> getAllCategories() async {
     try {
       final user = FirebaseAuth.instance.currentUser;

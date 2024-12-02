@@ -46,16 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     userId = FirebaseAuth.instance.currentUser?.uid;
     NotificationHelper.initialize();
+
+    // Directly call _fetchData to load data when the screen is initialized
     _fetchData();
     _currentScreen = const Center(child: CircularProgressIndicator());
   }
 
-  // Method to fetch tasks and categories with error handling
-  void _fetchData() async {
+  // Modify _fetchData to return a Future to make it usable with FutureBuilder (if needed)
+  Future<void> _fetchData() async {
     if (userId != null) {
       try {
         final fetchedCategories =
-            await widget.categoryService.getAllCategories();
+        await widget.categoryService.getAllCategories();
         final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
 
         setState(() {
@@ -67,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         });
       } catch (e) {
+        debugPrint('Error fetching data: $e');
         setState(() {
           _currentScreen = Center(child: Text('Error fetching data: $e'));
         });
@@ -81,14 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // Method to handle navigation
   void _handleNavigation(String route) {
     setState(() {
-      if (route == 'home') {
+      if (route == 'home' && _currentScreen is! HomeContentScreen) {
         _currentScreen = HomeContentScreen(
           categoryService: widget.categoryService,
           taskService: widget.taskService,
         );
-      } else if (route == 'recycle_bin') {
-        _currentScreen = RecycleBinScreen(); // Add this screen if required
-      } else if (route == 'categories') {
+      } else if (route == 'recycle_bin' && _currentScreen is! RecycleBinScreen) {
+        _currentScreen = RecycleBinScreen();
+      } else if (route == 'categories' &&
+          _currentScreen is! CategoryListScreen) {
         _currentScreen =
             CategoryListScreen(categoryService: widget.categoryService);
       }
@@ -101,85 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("Task Manager"),
         centerTitle: true,
-        backgroundColor: Colors.blue,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.category),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateCategoryScreen(
-                    categoryService: widget.categoryService,
-                  ),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(Icons.notifications),
-                if (notifications.isNotEmpty)
-                  Positioned(
-                    right: 0,
-                    child: CircleAvatar(
-                      radius: 8,
-                      backgroundColor: Colors.red,
-                      child: Text(
-                        '${notifications.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      NotificationsScreen(notifications: notifications),
-                ),
-              );
-            },
-          ),
-        ],
       ),
-      drawer: SideNavBar(
-        // Replace your custom drawer with the imported SideNavBar
-        onItemSelected: _handleNavigation, // Pass the navigation function
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            final newTask = await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddTaskScreen()),
-            );
-            if (newTask != null && newTask is Task) {
-              _addNewTask(newTask);
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Error creating new task: $e'),
-            ));
-          }
-        },
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 6.0,
-        tooltip: 'Add Task',
-        child: Icon(
-          Icons.add,
-          size: 28,
-        ),
-      ),
-      body: _currentScreen,
+      body: _currentScreen, // Display the current screen
+      drawer: SideNavBar(onItemSelected: _handleNavigation),
     );
   }
 
@@ -189,3 +117,4 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 }
+

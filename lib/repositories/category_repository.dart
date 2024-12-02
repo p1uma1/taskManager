@@ -93,6 +93,17 @@ class CategoryRepository {
       throw Exception('Error updating category: $e');
     }
   }
+  //category stream
+  Stream<List<Category>> getAllCategoriesStream() {
+    return _categoryCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        // Ensure to pass the `id` if required by `Category.fromJson`
+        return Category.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+    });
+  }
+
+
 
   // Delete a category by ID
   Future<void> deleteCategory(String id) async {

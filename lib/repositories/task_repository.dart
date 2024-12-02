@@ -29,6 +29,16 @@ class TaskRepository {
     }
   }
 
+  Stream<List<Task>> getTasksStreamForUser(String userId) { //stream
+    return _firestore
+        .collection('tasks')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+      return Task.fromJson(doc.data());
+    }).toList());
+  }
+
   // Fetch tasks for a specific user
   Future<List<Task>> fetchTasks(String userId) async {
     try {
