@@ -5,6 +5,7 @@ import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/screens/task/add_task_screen.dart';
 import 'package:taskmanager_new/screens/task/task_details_screen.dart';
+import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 
@@ -67,6 +68,12 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                   }
 
                   if (taskSnapshot.hasError) {
+                    // Show snackbar if there is an error
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error fetching tasks: ${taskSnapshot.error}')),
+                      );
+                    });
                     return Center(child: Text('Error: ${taskSnapshot.error}'));
                   }
 
@@ -84,6 +91,12 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                       }
 
                       if (categorySnapshot.hasError) {
+                        // Show snackbar if there is an error
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error fetching categories: ${categorySnapshot.error}')),
+                          );
+                        });
                         return Center(child: Text('Error: ${categorySnapshot.error}'));
                       }
 
@@ -108,8 +121,18 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
                         if (_isToday(task.dueDate)) {
                           todayTasks.add(task);
+                          // Trigger notification for today's task
+                          NotificationHelper.showNotification(
+                            title: "Task Due Today",
+                            body: "${task.title} is due today!",
+                          );
                         } else if (_isOverdue(task.dueDate)) {
                           overdueTasks.add(task);
+                          // Trigger notification for overdue task
+                          NotificationHelper.showNotification(
+                            title: "Overdue Task",
+                            body: "${task.title} is overdue!",
+                          );
                         } else {
                           upcomingTasks.add(task);
                         }
@@ -140,7 +163,12 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
           // Navigate to AddTaskScreen when pressed
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddTaskScreen()),
+            MaterialPageRoute(
+              builder: (context) => AddTaskScreen(
+                taskService: widget.taskService,
+                categoryService: widget.categoryService,  // Pass service to the AddTaskScreen
+              ),
+            ),
           );
         },
         child: Icon(Icons.add),
@@ -187,7 +215,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                     MaterialPageRoute(
                       builder: (context) => TaskDetailsScreen(
                         task: task,
-                        taskService: widget.taskService,
+                        taskService: widget.taskService, // Pass service here as well
                       ),
                     ),
                   );
@@ -200,4 +228,3 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     );
   }
 }
-

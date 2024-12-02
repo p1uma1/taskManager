@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/models/task.dart';
 import 'package:taskmanager_new/models/category.dart';
+import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class AddTaskScreen extends StatefulWidget {
+  final CategoryService categoryService;
+  final TaskService taskService;
+  const AddTaskScreen({
+    required this.categoryService,
+    required this.taskService,
+  });
+
   @override
   _AddTaskScreenState createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TaskService _taskService = TaskService();
 
   String _title = '';
   String _description = '';
@@ -20,24 +27,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String _dueTime = '';
   TaskPriority _priority = TaskPriority.medium;
   Category? _selectedCategory;
+  List<Category> _categories = [];
 
-  // Predefined categories (replace with real categories from your database or state)
-  final List<Category> _categories = [
-    Category(
-      userId: "223",
-      id: 'work',
-      name: 'Work',
-      description: 'Work-related tasks',
-      icon: 'work_icon.png',
-    ),
-    Category(
-      userId: "sd",
-      id: 'personal',
-      name: 'Personal',
-      description: 'Personal tasks',
-      icon: 'personal_icon.png',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Initialize categories using the categoryService
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final categories = await widget.categoryService.getAllCategories();
+    setState(() {
+      _categories = categories;
+    });
+  }
 
   // Utility method to combine due date and time
   DateTime _combineDateAndTime() {
@@ -86,7 +90,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     if (pickedTime != null) {
       setState(() {
         _dueTime =
-            '${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')} '
+        '${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')} '
             '${pickedTime.period == DayPeriod.am ? 'AM' : 'PM'}';
       });
     }
@@ -117,7 +121,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           categoryId: _selectedCategory?.id, // Use only the categoryId
         );
 
-        await _taskService.createTask(newTask);
+        await widget.taskService.createTask(newTask);
 
         Navigator.pop(context, newTask); // Return the new task
       } catch (e) {
@@ -185,10 +189,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   items: TaskPriority.values
                       .map(
                         (priority) => DropdownMenuItem(
-                          value: priority,
-                          child: Text(priority.toString().split('.').last),
-                        ),
-                      )
+                      value: priority,
+                      child: Text(priority.toString().split('.').last),
+                    ),
+                  )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -203,10 +207,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   items: _categories
                       .map(
                         (category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(category.name),
-                        ),
-                      )
+                      value: category,
+                      child: Text(category.name),
+                    ),
+                  )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -221,7 +225,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     child: Text('Save Task'),
                     style: ElevatedButton.styleFrom(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
                 ),

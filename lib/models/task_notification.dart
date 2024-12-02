@@ -2,9 +2,9 @@ import 'task.dart';
 import '../services/NotificationHelper.dart';
 
 class TaskNotification {
-  int id;
-  DateTime notificationDate;
-  String message;
+  final int id;
+  final DateTime notificationDate;
+  final String message;
   final Task task;
 
   TaskNotification({
@@ -13,25 +13,17 @@ class TaskNotification {
     required this.message,
     required this.task,
   }) {
+    // Ensure the notification date is not in the past
     if (notificationDate.isBefore(DateTime.now())) {
       throw ArgumentError('Notification date cannot be in the past.');
     }
   }
 
   /// Schedules a notification for the task
-  void sendNotification() {
-    NotificationHelper.scheduleNotification(
-      id: id,
-      title: task.title,
-      body: message,
-      scheduledDate: notificationDate,
-    );
-  }
 
-  /// Cancels a scheduled notification
-  void cancelNotification() {
-    NotificationHelper.cancelNotification(id);
-  }
+
+
+
 
   @override
   String toString() {

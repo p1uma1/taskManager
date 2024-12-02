@@ -56,9 +56,31 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchData() async {
     if (userId != null) {
       try {
-        final fetchedCategories =
-        await widget.categoryService.getAllCategories();
+        final fetchedCategories = await widget.categoryService.getAllCategories();
+        if (fetchedCategories == null || fetchedCategories.isEmpty) {
+          debugPrint('No categories available');
+          setState(() {
+            categories = [];
+          });
+        } else {
+          setState(() {
+            categories = fetchedCategories;
+          });
+        }
+
         final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
+        if (fetchedTasks == null || fetchedTasks.isEmpty) {
+          debugPrint('No tasks available for this user');
+          setState(() {
+            tasks = [];
+          });
+        } else {
+          setState(() {
+            tasks = fetchedTasks;
+          });
+        }
+
+
 
         setState(() {
           categories = fetchedCategories;
@@ -69,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         });
       } catch (e) {
-        debugPrint('Error fetching data: $e');
+        debugPrint('Error tchtching data: $e');
         setState(() {
           _currentScreen = Center(child: Text('Error fetching data: $e'));
         });
@@ -116,5 +138,6 @@ class _HomeScreenState extends State<HomeScreen> {
       tasks.add(task);
     });
   }
+
 }
 

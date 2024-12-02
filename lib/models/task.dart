@@ -90,7 +90,7 @@ class Task {
       dueDate: DateTime.parse(json['dueDate'] as String),
       dueTime: json['dueTime'] as String,
       priority:
-          TaskPriority.values.firstWhere((e) => e.name == json['priority']),
+      TaskPriority.values.firstWhere((e) => e.name == json['priority']),
       status: TaskStatus.values.firstWhere((e) => e.name == json['status']),
       onNotification: json['onNotification'] as bool,
       categoryId: json['categoryId'] as String?,
@@ -98,8 +98,14 @@ class Task {
     );
   }
 
+
   @override
   String toString() {
     return 'Task(id: $id, title: $title, categoryId: $categoryId, status: $status, dueDate: $dueDate)';
+  }
+
+  /// Method to mark task as completed
+  void markAsCompleted() {
+    this.status = TaskStatus.completed;
   }
 }
