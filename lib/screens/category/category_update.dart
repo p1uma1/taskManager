@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 
@@ -24,22 +25,38 @@ class _CategoryUpdateState extends State<CategoryUpdate> {
   }
 
   void _updateCategory() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User not logged in!')),
+      );
+      return;
+    }
+
+    final userId = currentUser.uid;
+
     final updatedCategory = Category(
       id: widget.category.id,
       name: _nameController.text,
       description: _descriptionController.text,
       icon: widget.category.icon,
+      userId: userId, // Assign the Firebase Auth UID
     );
 
+    try {
+      // Use CategoryService to update the category
+      await widget.categoryService.updateCategory(updatedCategory);
 
-    // Use CategoryService to update the category
-    await widget.categoryService.updateCategory(updatedCategory);
-
-    // Notify the user
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Category updated successfully!')),
-    );
+      // Notify the user
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Category updated successfully!')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update category: $error')),
+      );
+    }
   }
 
   @override
@@ -83,4 +100,3 @@ class _CategoryUpdateState extends State<CategoryUpdate> {
     );
   }
 }
-
