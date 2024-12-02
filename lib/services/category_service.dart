@@ -11,6 +11,10 @@ class CategoryService {
     return await _repository.fetchAllCategories();
   }
 
+  Future<List<Category>> fetchCategoriesByUserId(String userId) async {
+    return await _repository.fetchCategoriesByUserId(userId);
+  }
+
   // Fetch a category by ID
   Future<Category?> getCategoryById(String id) async {
     return await _repository.fetchCategoryById(id);

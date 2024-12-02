@@ -24,12 +24,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   // Predefined categories (replace with real categories from your database or state)
   final List<Category> _categories = [
     Category(
+      userId: "223",
       id: 'work',
       name: 'Work',
       description: 'Work-related tasks',
       icon: 'work_icon.png',
     ),
     Category(
+      userId: "sd",
       id: 'personal',
       name: 'Personal',
       description: 'Personal tasks',
