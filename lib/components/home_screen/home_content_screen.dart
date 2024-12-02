@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:taskmanager_new/components/task_card.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/task.dart';
+import 'package:taskmanager_new/screens/task/add_task_screen.dart';
 import 'package:taskmanager_new/screens/task/task_details_screen.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
@@ -21,30 +22,20 @@ class HomeContentScreen extends StatefulWidget {
 }
 
 class _HomeContentScreenState extends State<HomeContentScreen> {
-  Stream<String?> _getCategoryName(String? categoryId) async* {
-    if (categoryId == null) yield null;
-
-    try {
-      final categories = await widget.categoryService.getAllCategories();
-
-      final category = categories.firstWhere(
-            (cat) => cat.id == categoryId,
-        orElse: () => Category(
-          id: "0",
-          userId: "0",
-          name: "Unknown",
-          description: "Unknown Category",
-          icon: "",
-        ),
-      );
-
-      yield category.name;
-    } catch (e) {
-      print('Error fetching category name: $e');
-      yield "Unknown";
-    }
+  // Helper function to check if a task is overdue
+  bool _isOverdue(DateTime? dueDate) {
+    if (dueDate == null) return false;
+    return dueDate.isBefore(DateTime.now());
   }
 
+  // Helper function to check if a task is today's task
+  bool _isToday(DateTime? dueDate) {
+    if (dueDate == null) return false;
+    final today = DateTime.now();
+    return dueDate.year == today.year &&
+        dueDate.month == today.month &&
+        dueDate.day == today.day;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,53 +48,53 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
       return SizedBox.shrink();
     }
 
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Today's Tasks",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            StreamBuilder<List<Task>>(
-              stream: widget.taskService.getTaskStreamForUser(userId),
-              builder: (context, taskSnapshot) {
-                if (taskSnapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10),
+              StreamBuilder<List<Task>>(
+                stream: widget.taskService.getTaskStreamForUser(userId),
+                builder: (context, taskSnapshot) {
+                  if (taskSnapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-                if (taskSnapshot.hasError) {
-                  return Center(child: Text('Error: ${taskSnapshot.error}'));
-                }
+                  if (taskSnapshot.hasError) {
+                    return Center(child: Text('Error: ${taskSnapshot.error}'));
+                  }
 
-                final tasks = taskSnapshot.data ?? [];
+                  final tasks = taskSnapshot.data ?? [];
 
-                if (tasks.isEmpty) {
-                  return Center(child: Text('No tasks available'));
-                }
+                  if (tasks.isEmpty) {
+                    return Center(child: Text('No tasks available'));
+                  }
 
-                // We only need to stream categories once here
-                return FutureBuilder<List<Category>>(
-                  future: widget.categoryService.getAllCategories(),
-                  builder: (context, categorySnapshot) {
-                    if (categorySnapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
+                  return FutureBuilder<List<Category>>(
+                    future: widget.categoryService.getAllCategories(),
+                    builder: (context, categorySnapshot) {
+                      if (categorySnapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
 
-                    if (categorySnapshot.hasError) {
-                      return Center(child: Text('Error: ${categorySnapshot.error}'));
-                    }
+                      if (categorySnapshot.hasError) {
+                        return Center(child: Text('Error: ${categorySnapshot.error}'));
+                      }
 
-                    final categories = categorySnapshot.data ?? [];
+                      final categories = categorySnapshot.data ?? [];
 
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = tasks[index];
+                      // Categorize tasks
+                      List<Task> todayTasks = [];
+                      List<Task> upcomingTasks = [];
+                      List<Task> overdueTasks = [];
+
+                      for (var task in tasks) {
                         final category = categories.firstWhere(
                               (cat) => cat.id == task.categoryId,
                           orElse: () => Category(
@@ -115,32 +106,98 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                           ),
                         );
 
-                        return TaskCard(
-                          task: task,
-                          categoryName: category.name,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TaskDetailsScreen(
-                                  task: task,
-                                  taskService: widget.taskService,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ],
+                        if (_isToday(task.dueDate)) {
+                          todayTasks.add(task);
+                        } else if (_isOverdue(task.dueDate)) {
+                          overdueTasks.add(task);
+                        } else {
+                          upcomingTasks.add(task);
+                        }
+                      }
+
+                      // Build the UI with categorized tasks
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (todayTasks.isNotEmpty)
+                            _buildTaskSection("Today's Tasks", todayTasks, categories),
+                          if (upcomingTasks.isNotEmpty)
+                            _buildTaskSection("Upcoming Tasks", upcomingTasks, categories),
+                          if (overdueTasks.isNotEmpty)
+                            _buildTaskSection("Overdue Tasks", overdueTasks, categories),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to AddTaskScreen when pressed
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddTaskScreen()),
+          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }
 
+  Widget _buildTaskSection(
+      String sectionTitle, List<Task> tasks, List<Category> categories) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            sectionTitle,
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: tasks.length,
+            itemBuilder: (context, index) {
+              final task = tasks[index];
+              final category = categories.firstWhere(
+                    (cat) => cat.id == task.categoryId,
+                orElse: () => Category(
+                  id: "0",
+                  userId: "0",
+                  name: "Unknown",
+                  description: "Unknown Category",
+                  icon: "",
+                ),
+              );
 
+              return TaskCard(
+                task: task,
+                categoryName: category.name,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TaskDetailsScreen(
+                        task: task,
+                        taskService: widget.taskService,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
+
