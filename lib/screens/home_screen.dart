@@ -10,13 +10,13 @@ import 'package:taskmanager_new/screens/category/category_list_screen.dart';
 import 'package:taskmanager_new/screens/category/create_category.dart';
 import 'package:taskmanager_new/screens/notification_screen.dart';
 import 'package:taskmanager_new/screens/recyclebin_screen.dart';
+import 'package:taskmanager_new/screens/task/add_task_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 import 'package:taskmanager_new/models/category.dart' as CategoryModel;
 
 class HomeScreen extends StatefulWidget {
-
   final CategoryRepository categoryRepository;
   final CategoryService categoryService;
   final TaskRepository taskRepository;
@@ -49,17 +49,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _currentScreen = const Center(child: CircularProgressIndicator());
   }
 
+  // Method to fetch tasks and categories with error handling
   void _fetchData() async {
     if (userId != null) {
-      final fetchedCategories = await widget.categoryService.fetchCategoriesByUserId(userId!);
-      final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
+      try {
+        final fetchedCategories = await widget.categoryService.fetchCategoriesByUserId(userId!);
+        final fetchedTasks = await widget.taskService.getTasksForUser(userId!);
+
+        setState(() {
+          categories = fetchedCategories;
+          tasks = fetchedTasks;
+          _currentScreen = HomeContentScreen(
+            categoryService: widget.categoryService,
+            taskService: widget.taskService,
+          );
+        });
+      } catch (e) {
+        setState(() {
+          _currentScreen = Center(child: Text('Error fetching data: $e'));
+        });
+      }
+    } else {
       setState(() {
-        categories = fetchedCategories;
-        tasks = fetchedTasks;
-        _currentScreen = HomeContentScreen(
-          categoryService: widget.categoryService,
-          taskService: widget.taskService,
-        );
+        _currentScreen = Center(child: Text('User not logged in.'));
       });
     }
   }
@@ -126,7 +138,6 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-
                   builder: (context) => NotificationsScreen(notifications: notifications),
                 ),
               );
@@ -168,7 +179,39 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          try {
+            final newTask = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskScreen()),
+            );
+            if (newTask != null && newTask is Task) {
+              _addNewTask(newTask);
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Error creating new task: $e'),
+            ));
+          }
+        },
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 6.0,
+        tooltip: 'Add Task',
+        child: Icon(
+          Icons.add,
+          size: 28,
+        ),
+      ),
       body: _currentScreen,
     );
+  }
+
+  void _addNewTask(Task task) {
+    setState(() {
+      tasks.add(task);
+    });
   }
 }
