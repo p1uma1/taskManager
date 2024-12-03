@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (userId != null) {
       try {
         final fetchedCategories =
-            await widget.categoryService.getAllCategories();
+        await widget.categoryService.getAllCategories();
         if (fetchedCategories == null || fetchedCategories.isEmpty) {
           debugPrint('No categories available');
           setState(() {
@@ -140,9 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _addNewTask(Task task) {
-    setState(() {
-      tasks.add(task);
-    });
-  }
+// void _addNewTask(Task task) {
+//   setState(() {
+//     tasks.add(task);
+//   });
+// }
 }

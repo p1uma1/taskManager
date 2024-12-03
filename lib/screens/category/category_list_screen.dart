@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager_new/screens/category/create_category.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 import 'category_details.dart';
@@ -13,7 +14,7 @@ class CategoryListScreen extends StatefulWidget {
 }
 
 class _CategoryListScreenState extends State<CategoryListScreen> {
-  late Future<List<Category>> _categoriesFuture;
+  late Stream<List<Category>> _categoriesFuture;
 
   @override
   void initState() {
@@ -23,7 +24,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
   void _fetchCategories() {
     setState(() {
-      _categoriesFuture = widget.categoryService.getAllCategories();
+      _categoriesFuture = widget.categoryService.getAllCategoriesStream();
     });
   }
 
@@ -33,8 +34,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
       appBar: AppBar(
         title: Text('Category List'),
       ),
-      body: FutureBuilder<List<Category>>(
-        future: _categoriesFuture,
+      body: StreamBuilder<List<Category>>(
+        stream: _categoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -119,6 +120,22 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCategoryScreen(
+                categoryService: widget.categoryService,
+              ),
+            ),
+          );
+        },
+        child: Icon(Icons.add, size: 28),
+        backgroundColor: Colors.blueAccent,
+        tooltip: "Add New Task",
+      ),
     );
   }
+
 }
