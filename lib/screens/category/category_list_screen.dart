@@ -13,141 +13,112 @@ class CategoryListScreen extends StatefulWidget {
 }
 
 class _CategoryListScreenState extends State<CategoryListScreen> {
+  late Future<List<Category>> _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategories();
+  }
+
+  void _fetchCategories() {
+    setState(() {
+      _categoriesFuture = widget.categoryService.getAllCategories();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Category List',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.black,
-          ),
-        ),
-        backgroundColor: Colors.blueAccent.shade100,
+        title: Text('Category List'),
       ),
       body: FutureBuilder<List<Category>>(
-        future: widget.categoryService.getAllCategories(),
+        future: _categoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: Colors.blueAccent.shade200));
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Failed to load categories.'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No categories available.'));
           }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error loading categories'));
-          }
-
-          if (snapshot.hasData) {
-            final categories = snapshot.data!;
-
-            return ListView.builder(
-              padding: EdgeInsets.all(8),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                return Card(
-                  elevation: 4,
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          final categories = snapshot.data!;
+          return ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryDetails(
+                        category: category,
+                        categoryService: widget.categoryService,
+                        onCategoryChanged: _fetchCategories,
+                      ),
+                    ),
+                  );
+                },
+                child: Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(15.0),
                   ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(16),
-                    title: Text(
-                      category.name,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      category.description,
-                      style: TextStyle(color: Colors.grey[700]),
-                    ),
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blueAccent.shade200,
-                      child: Icon(Icons.category, color: Colors.white),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  elevation: 5,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            // Show confirmation dialog
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text('Confirm Deletion'),
-                                  content: Text(
-                                      'Are you sure you want to delete this category?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: Text('Delete'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-
-                            if (confirm == true) {
-                              if (category.userId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Default categories cannot be deleted!'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              } else {
-                                await widget.categoryService
-                                    .deleteCategory(category.id);
-                                setState(() {}); // Rebuild the UI
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Category deleted successfully!'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              }
-                            }
-                          },
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.blueAccent.shade100,
+                          child: Icon(
+                            Icons.category,
+                            size: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                category.name,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                category.description,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 20,
+                          color: Colors.grey,
                         ),
                       ],
                     ),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => CategoryDetails(
-                              category: category,
-                              categoryService: widget.categoryService,
-                            ),
-                          ),
-                        );
-                      }
-
                   ),
-                );
-              },
-            );
-          } else {
-            return Center(
-              child: Text(
-                'No categories available.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
+                ),
+              );
+            },
+          );
         },
       ),
     );
   }
 }
-

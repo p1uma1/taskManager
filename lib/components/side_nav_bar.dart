@@ -15,13 +15,15 @@ class SideNavBar extends StatelessWidget {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Colors.blue.shade900,
             ),
             child: Text(
               "Task Manager",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
               ),
             ),
           ),
@@ -62,7 +64,6 @@ class SideNavBar extends StatelessWidget {
           ),
         ],
       ),
-
     );
   }
 }

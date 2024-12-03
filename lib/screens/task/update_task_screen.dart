@@ -106,6 +106,7 @@ class _UpdateTaskScreenState extends State<UpdateTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade300,
         title: Text("Update Task"),
       ),
       body: SingleChildScrollView(
