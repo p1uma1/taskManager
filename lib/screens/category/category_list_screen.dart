@@ -32,7 +32,6 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Category List'),
       ),
       body: StreamBuilder<List<Category>>(
         stream: _categoriesFuture,

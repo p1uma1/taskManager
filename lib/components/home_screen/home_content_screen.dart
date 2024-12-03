@@ -52,41 +52,43 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.home, color: Colors.blue.shade900),
-            SizedBox(width: 10),
-            Text(
-              'Home',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 22,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 8,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-        ),
-      ),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Custom Header with improved styling
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      'Tasks Overview',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20), // Spacing between header and content
+
+              // StreamBuilder for tasks
               StreamBuilder<List<Task>>(
                 stream: widget.taskService.getTaskStreamForUser(userId),
                 builder: (context, taskSnapshot) {
@@ -201,11 +203,13 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
             ),
           );
         },
-        child: Icon(Icons.add, size: 28),
+        child: Icon(Icons.add, size: 30),
         backgroundColor: Colors.blueAccent,
         tooltip: "Add New Task",
       ),
     );
+
+
   }
 
   Widget _buildTaskSection(

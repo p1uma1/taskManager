@@ -66,12 +66,6 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Recycle Bin",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.redAccent,
       ),
       body: FutureBuilder<List<RecycleBin>>(
         future: _taskService.fetchRecycleBinItems(),
