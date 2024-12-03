@@ -3,11 +3,16 @@ import 'package:taskmanager_new/services/category_service.dart';
 import '../../models/category.dart';
 import 'category_details.dart';
 
-class CategoryListScreen extends StatelessWidget {
+class CategoryListScreen extends StatefulWidget {
   final CategoryService categoryService;
 
   CategoryListScreen({required this.categoryService});
 
+  @override
+  _CategoryListScreenState createState() => _CategoryListScreenState();
+}
+
+class _CategoryListScreenState extends State<CategoryListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,8 +27,8 @@ class CategoryListScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.blueAccent.shade100,
       ),
-      body: StreamBuilder<List<Category>>(
-        stream: categoryService.getAllCategoriesStream(), // Stream of categories
+      body: FutureBuilder<List<Category>>(
+        future: widget.categoryService.getAllCategories(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: Colors.blueAccent.shade200));
@@ -61,18 +66,72 @@ class CategoryListScreen extends StatelessWidget {
                       backgroundColor: Colors.blueAccent.shade200,
                       child: Icon(Icons.category, color: Colors.white),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            // Show confirmation dialog
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Confirm Deletion'),
+                                  content: Text(
+                                      'Are you sure you want to delete this category?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: Text('Delete'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirm == true) {
+                              if (category.userId == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Default categories cannot be deleted!'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              } else {
+                                await widget.categoryService
+                                    .deleteCategory(category.id);
+                                setState(() {}); // Rebuild the UI
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Category deleted successfully!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                     onTap: () {
-                      // Ensure no recursive rebuilding or navigation
-                      if (ModalRoute.of(context)?.settings.name != '/categoryDetails') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CategoryDetails(category: category, categoryService: categoryService),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryDetails(
+                            category: category,
+                            categoryService: widget.categoryService,
                           ),
-                        );
-                      }
+                        ),
+                      );
                     },
                   ),
                 );
@@ -91,5 +150,4 @@ class CategoryListScreen extends StatelessWidget {
     );
   }
 }
-
 

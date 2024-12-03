@@ -14,6 +14,7 @@ class Category {
     this.userId, // Include userId in the constructor
   });
 
+
   // Convert Category to JSON for storage in Firestore
   Map<String, dynamic> toJson() {
     return {

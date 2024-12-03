@@ -12,12 +12,7 @@ class TaskRepository {
   // Add a new task
   Future<void> addTask(Task task) async {
     try {
-      /*
-      await _firestore
-          .collection(_collectionName)
-          .doc(task.id)
-          .set(task.toJson());
-          */
+
 
       final docRef = _firestore.collection(_collectionName).doc();
 
@@ -28,6 +23,8 @@ class TaskRepository {
       throw Exception('Failed to add task: $e');
     }
   }
+
+
 
   Stream<List<Task>> getTasksStreamForUser(String userId) { //stream
     return _firestore
