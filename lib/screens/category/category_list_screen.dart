@@ -122,17 +122,17 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                         ),
                       ],
                     ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CategoryDetails(
-                            category: category,
-                            categoryService: widget.categoryService,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => CategoryDetails(
+                              category: category,
+                              categoryService: widget.categoryService,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      }
+
                   ),
                 );
               },
