@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:taskmanager_new/services/task_service.dart';
 import '../models/recyclebin.dart';
@@ -12,6 +13,53 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
 
   Future<void> _refreshRecycleBinItems() async {
     setState(() {});
+  }
+
+  void _showMessageDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          contentPadding: EdgeInsets.all(20),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.info,
+            color: Colors.black,
+            size: 48,
+          ),
+          content: Text(
+            message,
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -86,23 +134,13 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                       onSelected: (value) async {
                         if (value == 'restore') {
                           await _taskService.restoreTask(binItem);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Task '${binItem.task.title}' restored.",
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ),
+                          _showMessageDialog(
+                            "'${binItem.task.title}' is restored.",
                           );
                         } else if (value == 'delete') {
                           await _taskService.permanentlyDeleteTask(binItem);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Task '${binItem.task.title}' permanently deleted.",
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ),
+                          _showMessageDialog(
+                            "'${binItem.task.title}' is permanently deleted.",
                           );
                         }
                         await _refreshRecycleBinItems();
@@ -110,16 +148,30 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                       itemBuilder: (context) => [
                         PopupMenuItem(
                           value: 'restore',
-                          child: Text(
-                            "Restore",
-                            style: TextStyle(fontSize: 14, color: Colors.green),
+                          child: Row(
+                            children: [
+                              Icon(Icons.restore, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text(
+                                "Restore",
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.green),
+                              ),
+                            ],
                           ),
                         ),
                         PopupMenuItem(
                           value: 'delete',
-                          child: Text(
-                            "Permanently Delete",
-                            style: TextStyle(fontSize: 14, color: Colors.red),
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_forever, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                "Permanently Delete",
+                                style:
+                                TextStyle(fontSize: 14, color: Colors.red),
+                              ),
+                            ],
                           ),
                         ),
                       ],

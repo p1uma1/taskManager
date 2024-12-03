@@ -21,13 +21,25 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.blue,
       body: Center(
-        child: Text(
-          'Task Manager',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons
+                  .check_circle_rounded, // Replace with a custom icon if you have one
+              size: 100,
+              color: Colors.white,
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Task Manager',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );

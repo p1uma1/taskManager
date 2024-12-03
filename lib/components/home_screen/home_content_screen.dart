@@ -53,25 +53,23 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Home',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            // fontWeight: FontWeight.bold,
-            fontSize: 22,
-            letterSpacing: 1,
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(Icons.home, color: Colors.blue.shade900),
+            SizedBox(width: 10),
+            Text(
+              'Home',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 22,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            // gradient: LinearGradient(
-            //   colors: [
-            //     const Color.fromARGB(255, 0, 105, 226),
-            //     const Color.fromARGB(255, 25, 216, 254),
-            //   ],
-            //   begin: Alignment.topCenter,
-            //   end: Alignment.bottomCenter,
-            // ),
             color: Colors.blue,
             boxShadow: [
               BoxShadow(
@@ -82,42 +80,6 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
             ],
           ),
         ),
-        actions: [
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color.fromARGB(255, 0, 0, 0),
-                  const Color.fromARGB(255, 0, 0, 0)
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.add_box, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CreateCategoryScreen(
-                      categoryService: widget.categoryService,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16),
@@ -178,7 +140,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
                       for (var task in tasks) {
                         final category = categories.firstWhere(
-                          (cat) => cat.id == task.categoryId,
+                              (cat) => cat.id == task.categoryId,
                           orElse: () => Category(
                             id: "0",
                             userId: "0",
@@ -276,7 +238,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                 itemBuilder: (context, index) {
                   final task = tasks[index];
                   final category = categories.firstWhere(
-                    (cat) => cat.id == task.categoryId,
+                        (cat) => cat.id == task.categoryId,
                     orElse: () => Category(
                       id: "0",
                       userId: "0",

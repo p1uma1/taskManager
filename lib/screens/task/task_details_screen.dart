@@ -14,16 +14,21 @@ class TaskDetailsScreen extends StatelessWidget {
 
   void _deleteTask(BuildContext context) async {
     try {
+      // Perform the task deletion (moving to recycle bin)
       await taskService.moveToRecycleBin(task);
-      Navigator.of(context).pop(); // Close details screen
+
+      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Task "${task.title}" deleted successfully!')),
       );
+
+      // After successful deletion, pop the screen to return to the previous page
+      Navigator.of(context).pop(true);
     } catch (error) {
+      // If deletion fails, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete task. Please try again later.' +
-              error.toString()),
+          content: Text('Failed to delete task. Please try again later.' + error.toString()),
           backgroundColor: Colors.red,
         ),
       );
@@ -32,7 +37,7 @@ class TaskDetailsScreen extends StatelessWidget {
 
   void _updateTask(BuildContext context) async {
     try {
-      // Navigate to update screen and wait for updated task
+      // Navigate to update screen and await the updated task
       final updatedTask = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -44,12 +49,13 @@ class TaskDetailsScreen extends StatelessWidget {
       );
 
       if (updatedTask != null) {
-        await taskService.updateTask(updatedTask); // Save updates
+        // Display a success message if the task is updated
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Task "${task.title}" updated successfully!')),
+          SnackBar(content: Text('Task "${updatedTask.title}" updated successfully!')),
         );
       }
     } catch (error) {
+      // Handle any errors during task update
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to update task. Please try again later.'),
@@ -154,8 +160,7 @@ class TaskDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       icon: Icon(Icons.edit),
-                      label: const Text('Update Task',
-                          style: TextStyle(color: Colors.black)),
+                      label: const Text('Update Task', style: TextStyle(color: Colors.black)),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -165,8 +170,7 @@ class TaskDetailsScreen extends StatelessWidget {
                           builder: (context) {
                             return AlertDialog(
                               title: const Text('Delete Task'),
-                              content: const Text(
-                                  'Are you sure you want to delete this task?'),
+                              content: const Text('Are you sure you want to delete this task?'),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
@@ -175,7 +179,7 @@ class TaskDetailsScreen extends StatelessWidget {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop(); // Close dialog
-                                    _deleteTask(context);
+                                    _deleteTask(context); // Proceed with task deletion
                                   },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.red,
@@ -194,8 +198,7 @@ class TaskDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       icon: Icon(Icons.delete),
-                      label: const Text('Delete Task',
-                          style: TextStyle(color: Colors.black)),
+                      label: const Text('Delete Task', style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 ),
