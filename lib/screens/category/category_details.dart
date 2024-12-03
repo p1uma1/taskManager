@@ -31,7 +31,9 @@ class CategoryDetails extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => CategoryUpdate(
-            category: category, categoryService: categoryService),
+          category: category,
+          categoryService: categoryService,
+        ),
       ),
     );
   }
@@ -42,84 +44,129 @@ class CategoryDetails extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Category Details'),
+        title: Text(
+          'Category Details',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.blueAccent,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Display Category ID
-                Text(
-                  'ID: ${category.id}',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-
-                // Display Category Name
-                Text(
-                  'Name: ${category.name}',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 8),
-
-                // Display Category Description
-                Text(
-                  'Description: ${category.description}',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 8),
-
-                // Display if it is a default category
-                if (isDefaultCategory)
-                  Text(
-                    'This is a default category.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blueGrey,
-                      fontStyle: FontStyle.italic,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 10,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category Icon or Visual Placeholder
+                  Center(
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.blueAccent.shade100,
+                      child: Icon(
+                        Icons.category,
+                        size: 40,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                SizedBox(height: 20),
+                  SizedBox(height: 20),
 
-                // Row with buttons for Update and Delete
-                Row(
-                  children: [
-                    // Update button (disabled for default categories)
-                    Expanded(
-                      child: ElevatedButton(
+                  // Category Name
+                  Text(
+                    category.name,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  // SizedBox(height: 10),
+
+                  SizedBox(height: 20),
+
+                  // Divider
+                  Divider(color: Colors.grey.shade300, thickness: 1.5),
+                  SizedBox(height: 20),
+
+                  // Details Section
+                  Text(
+                    'Category Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  // Description
+                  Text(
+                    category.description,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+                  if (isDefaultCategory)
+                    Text(
+                      'This is a default category.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.redAccent,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  SizedBox(height: 20),
+
+                  // Action Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Update Button
+                      ElevatedButton.icon(
                         onPressed: isDefaultCategory
                             ? null
                             : () => _updateCategory(context),
-                        child: Text('Update',
-                            style: TextStyle(color: Colors.black)),
+                        icon: Icon(Icons.edit, color: Colors.white),
+                        label: Text('Update',
+                            style: TextStyle(
+                                fontFamily: 'Poppins', color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDefaultCategory
                               ? Colors.grey
-                              : Colors.blueAccent.shade100,
+                              : Colors.blueAccent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 10),
 
-                    // Delete button (disabled for default categories)
-                    Expanded(
-                      child: ElevatedButton(
+                      // Delete Button
+                      ElevatedButton.icon(
                         onPressed: isDefaultCategory
                             ? null
                             : () => _deleteCategory(context),
-                        child: Text('Delete',
-                            style: TextStyle(color: Colors.black)),
+                        icon: Icon(Icons.delete, color: Colors.white),
+                        label: Text('Delete',
+                            style: TextStyle(
+                                fontFamily: 'Poppins', color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDefaultCategory
                               ? Colors.grey
@@ -127,12 +174,14 @@ class CategoryDetails extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

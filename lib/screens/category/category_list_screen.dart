@@ -13,37 +13,50 @@ class CategoryListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Category List',
+          'Categories',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 25,
+            fontFamily: 'Poppins',
             color: Colors.black,
+            letterSpacing: 2,
           ),
         ),
-        backgroundColor: Colors.blueAccent.shade100,
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
       ),
       body: StreamBuilder<List<Category>>(
-        stream: categoryService.getAllCategoriesStream(), // Stream of categories
+        stream: categoryService.getAllCategoriesStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: Colors.blueAccent.shade200));
+            return Center(
+              child: CircularProgressIndicator(color: Colors.blueAccent),
+            );
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading categories'));
+            return Center(
+              child: Text(
+                'Error loading categories.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.redAccent,
+                ),
+              ),
+            );
           }
 
           if (snapshot.hasData) {
             final categories = snapshot.data!;
 
             return ListView.builder(
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
                 return Card(
-                  elevation: 4,
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  elevation: 6,
+                  margin: EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -51,28 +64,45 @@ class CategoryListScreen extends StatelessWidget {
                     contentPadding: EdgeInsets.all(16),
                     title: Text(
                       category.name,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                        color: Colors.black,
+                      ),
                     ),
                     subtitle: Text(
                       category.description,
-                      style: TextStyle(color: Colors.grey[700]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                        fontFamily: 'Poppins',
+                      ),
                     ),
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blueAccent.shade200,
-                      child: Icon(Icons.category, color: Colors.white),
+                      backgroundColor: Colors.blueAccent,
+                      radius: 24,
+                      child: Icon(
+                        Icons.category,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey,
+                      size: 18,
+                    ),
                     onTap: () {
-                      // Ensure no recursive rebuilding or navigation
-                      if (ModalRoute.of(context)?.settings.name != '/categoryDetails') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CategoryDetails(category: category, categoryService: categoryService),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryDetails(
+                            category: category,
+                            categoryService: categoryService,
                           ),
-                        );
-                      }
+                        ),
+                      );
                     },
                   ),
                 );
@@ -82,14 +112,24 @@ class CategoryListScreen extends StatelessWidget {
             return Center(
               child: Text(
                 'No categories available.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                  fontFamily: 'Poppins',
+                ),
               ),
             );
           }
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to add category screen
+          Navigator.pushNamed(context, '/addCategory');
+        },
+        backgroundColor: Colors.blueAccent,
+        child: Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }
-
-
