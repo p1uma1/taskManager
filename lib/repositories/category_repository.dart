@@ -85,6 +85,33 @@ class CategoryRepository {
     }
   }
 
+  Future<void> createCategory(
+      String name,
+      String description,
+      String icon, {
+        String? userId, // Optional userId
+      }) async {
+    try {
+      // Get a unique ID from Firestore
+      final docRef = _firestore.collection('categories').doc();
+
+      // Create the category object
+      final category = Category(
+        id: docRef.id, // Auto-generated ID
+        name: name,
+        description: description,
+        icon: icon,
+        userId: userId, // Assign the optional userId
+      );
+
+      // Save the category to Firestore
+      await docRef.set(category.toJson());
+    } catch (e) {
+      throw Exception('Error adding category: $e');
+    }
+  }
+
+
   // Update an existing category
   Future<void> updateCategory(Category category) async {
     try {

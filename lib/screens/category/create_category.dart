@@ -14,7 +14,6 @@ class CreateCategoryScreen extends StatefulWidget {
 
 class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _idController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedIcon = 'home'; // Default icon
@@ -45,7 +44,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
 
       // Create a new Category object
       final newCategory = Category(
-        id: _idController.text, // Assuming the ID is a string
+        id: '', // Firestore will auto-generate the ID
         name: _nameController.text,
         description: _descriptionController.text,
         icon: _selectedIcon,
@@ -54,10 +53,23 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
 
       try {
         // Call the CategoryService to add the category
-        await widget.categoryService.createCategory(newCategory);
+        if (newCategory.userId == null) {
+          // Handle the case where userId is null (show an error or take another action)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('User is not logged in!')),
+          );
+          return; // Prevent category creation if userId is null
+        } else {
+          await widget.categoryService.createCategorywithAttributes(
+            name: newCategory.name,
+            description: newCategory.description,
+            icon: newCategory.icon,
+            userId: newCategory.userId!, // Safe to use now
+          );
+        }
+
 
         // Clear the form
-        _idController.clear();
         _nameController.clear();
         _descriptionController.clear();
 
@@ -90,22 +102,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  TextFormField(
-                    controller: _idController,
-                    decoration: InputDecoration(
-                      labelText: 'ID',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.confirmation_number),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an ID';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
+                  // Removed the ID field
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(

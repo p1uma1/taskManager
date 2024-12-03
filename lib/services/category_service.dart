@@ -66,6 +66,15 @@ class CategoryService {
   Future<void> createCategory(Category category) async {
     await _repository.addCategory(category);
   }
+  Future<void> createCategorywithAttributes({
+    required String name,
+    required String description,
+    required String icon,
+    required String userId,
+  }) async {
+    _repository.createCategory(name, description, icon,userId:userId);
+  }
+
 
   // Update a category
   Future<void> updateCategory(Category category) async {
