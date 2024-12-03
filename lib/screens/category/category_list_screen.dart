@@ -129,12 +129,20 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 categoryService: widget.categoryService,
               ),
             ),
-          );
+          ).then((result) {
+            // Check if the result is true, then refresh the categories
+            if (result == true) {
+              _fetchCategories();
+            }
+          });
         },
         child: Icon(Icons.add, size: 28),
         backgroundColor: Colors.blueAccent,
         tooltip: "Add New Task",
       ),
+
+
+
     );
   }
 

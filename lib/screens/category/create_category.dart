@@ -68,7 +68,6 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
           );
         }
 
-
         // Clear the form
         _nameController.clear();
         _descriptionController.clear();
@@ -77,6 +76,10 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Category created successfully!')),
         );
+
+        // Pop the current screen and go back to the previous screen
+        Navigator.pop(context, true); // Pass true or any value if you want to indicate success
+
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to create category: $error')),
@@ -84,6 +87,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
