@@ -4,7 +4,7 @@ import 'package:taskmanager_new/services/task_service.dart';
 import 'package:taskmanager_new/screens/task/update_task_screen.dart';
 
 class TaskDetailsScreen extends StatelessWidget {
-  final Task task;
+  Task task;
   final TaskService taskService;
 
   TaskDetailsScreen({
@@ -28,7 +28,8 @@ class TaskDetailsScreen extends StatelessWidget {
       // If deletion fails, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete task. Please try again later.' + error.toString()),
+          content: Text('Failed to delete task. Please try again later.' +
+              error.toString()),
           backgroundColor: Colors.red,
         ),
       );
@@ -37,7 +38,7 @@ class TaskDetailsScreen extends StatelessWidget {
 
   void _updateTask(BuildContext context) async {
     try {
-      // Navigate to update screen and await the updated task
+      // Navigate to UpdateTaskScreen and await the result
       final updatedTask = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -49,9 +50,17 @@ class TaskDetailsScreen extends StatelessWidget {
       );
 
       if (updatedTask != null) {
-        // Display a success message if the task is updated
+        // Update the task in the current screen with the returned updated task
+        task = updatedTask;
+
+        // Notify the UI about the change
+        (context as Element).markNeedsBuild();
+
+        // Display a success message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Task "${updatedTask.title}" updated successfully!')),
+          SnackBar(
+              content:
+                  Text('Task "${updatedTask.title}" updated successfully!')),
         );
       }
     } catch (error) {
@@ -160,7 +169,8 @@ class TaskDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       icon: Icon(Icons.edit),
-                      label: const Text('Update Task', style: TextStyle(color: Colors.black)),
+                      label: const Text('Update Task',
+                          style: TextStyle(color: Colors.black)),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -170,7 +180,8 @@ class TaskDetailsScreen extends StatelessWidget {
                           builder: (context) {
                             return AlertDialog(
                               title: const Text('Delete Task'),
-                              content: const Text('Are you sure you want to delete this task?'),
+                              content: const Text(
+                                  'Are you sure you want to delete this task?'),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
@@ -179,7 +190,8 @@ class TaskDetailsScreen extends StatelessWidget {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop(); // Close dialog
-                                    _deleteTask(context); // Proceed with task deletion
+                                    _deleteTask(
+                                        context); // Proceed with task deletion
                                   },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.red,
@@ -198,7 +210,8 @@ class TaskDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       icon: Icon(Icons.delete),
-                      label: const Text('Delete Task', style: TextStyle(color: Colors.black)),
+                      label: const Text('Delete Task',
+                          style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 ),
