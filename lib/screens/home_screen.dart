@@ -7,10 +7,10 @@ import 'package:taskmanager_new/models/task_notification.dart';
 import 'package:taskmanager_new/repositories/category_repository.dart';
 import 'package:taskmanager_new/repositories/task_repository.dart';
 import 'package:taskmanager_new/screens/category/category_list_screen.dart';
-import 'package:taskmanager_new/screens/category/create_category.dart';
-import 'package:taskmanager_new/screens/notification_screen.dart';
+// import 'package:taskmanager_new/screens/category/create_category.dart';
+// import 'package:taskmanager_new/screens/notification_screen.dart';
 import 'package:taskmanager_new/screens/recyclebin_screen.dart';
-import 'package:taskmanager_new/screens/task/add_task_screen.dart';
+// import 'package:taskmanager_new/screens/task/add_task_screen.dart';
 import 'package:taskmanager_new/services/NotificationHelper.dart';
 import 'package:taskmanager_new/services/category_service.dart';
 import 'package:taskmanager_new/services/task_service.dart';
@@ -41,6 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<TaskNotification> notifications = [];
   Widget _currentScreen = const SizedBox();
 
+  // Add a variable to hold the current AppBar title
+  String _appBarTitle = "Home";
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchData() async {
     if (userId != null) {
       try {
-        final fetchedCategories = await widget.categoryService.getAllCategories();
+        final fetchedCategories =
+        await widget.categoryService.getAllCategories();
         if (fetchedCategories == null || fetchedCategories.isEmpty) {
           debugPrint('No categories available');
           setState(() {
@@ -80,8 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
 
-
-
         setState(() {
           categories = fetchedCategories;
           tasks = fetchedTasks;
@@ -91,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         });
       } catch (e) {
-        debugPrint('Error tchtching data: $e');
+        debugPrint('Error fetching data: $e');
         setState(() {
           _currentScreen = Center(child: Text('Error fetching data: $e'));
         });
@@ -103,20 +105,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Method to handle navigation
+  // Method to handle navigation and update AppBar title
   void _handleNavigation(String route) {
     setState(() {
       if (route == 'home' && _currentScreen is! HomeContentScreen) {
+        _appBarTitle = "Home";
         _currentScreen = HomeContentScreen(
           categoryService: widget.categoryService,
           taskService: widget.taskService,
         );
       } else if (route == 'recycle_bin' && _currentScreen is! RecycleBinScreen) {
+        _appBarTitle = "Recycle Bin";
         _currentScreen = RecycleBinScreen();
-      } else if (route == 'categories' &&
-          _currentScreen is! CategoryListScreen) {
-        _currentScreen =
-            CategoryListScreen(categoryService: widget.categoryService);
+      } else if (route == 'categories' && _currentScreen is! CategoryListScreen) {
+        _appBarTitle = "Categories";
+        _currentScreen = CategoryListScreen(categoryService: widget.categoryService);
       }
     });
   }
@@ -125,23 +128,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Task Manager"),
+        title: Text(_appBarTitle, // Dynamically set the title here
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontFamily: 'Poppins',
+              letterSpacing: 2,
+              color: Colors.white,
+            )),
         centerTitle: true,
-
+        backgroundColor: Colors.blueAccent,
       ),
       body: _currentScreen, // Display the current screen
       drawer: SideNavBar(onItemSelected: _handleNavigation),
     );
   }
-
-
-  void _addNewTask(Task task) {
-    setState(() {
-      tasks.add(task);
-    });
-  }
-
-
 }
-
-

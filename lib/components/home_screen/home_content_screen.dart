@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taskmanager_new/components/task_card.dart';
 import 'package:taskmanager_new/models/category.dart';
 import 'package:taskmanager_new/models/task.dart';
@@ -51,33 +52,43 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Home'),
-        actions: [
-          // Add Category Icon Button
-          IconButton(
-            icon: Icon(Icons.add_box), // You can change the icon as per your preference
-            onPressed: () {
-              // Navigate to CreateCategoryScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateCategoryScreen(
-                    categoryService: widget.categoryService,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: Padding(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 10),
+              // Custom Header with improved styling
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      'Tasks Overview',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20), // Spacing between header and content
+
+              // StreamBuilder for tasks
               StreamBuilder<List<Task>>(
                 stream: widget.taskService.getTaskStreamForUser(userId),
                 builder: (context, taskSnapshot) {
@@ -86,10 +97,11 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                   }
 
                   if (taskSnapshot.hasError) {
-                    // Show snackbar if there is an error
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error fetching tasks: ${taskSnapshot.error}')),
+                        SnackBar(
+                            content: Text(
+                                'Error fetching tasks: ${taskSnapshot.error}')),
                       );
                     });
                     return Center(child: Text('Error: ${taskSnapshot.error}'));
@@ -104,18 +116,21 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                   return FutureBuilder<List<Category>>(
                     future: widget.categoryService.getAllCategories(),
                     builder: (context, categorySnapshot) {
-                      if (categorySnapshot.connectionState == ConnectionState.waiting) {
+                      if (categorySnapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       }
 
                       if (categorySnapshot.hasError) {
-                        // Show snackbar if there is an error
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error fetching categories: ${categorySnapshot.error}')),
+                            SnackBar(
+                                content: Text(
+                                    'Error fetching categories: ${categorySnapshot.error}')),
                           );
                         });
-                        return Center(child: Text('Error: ${categorySnapshot.error}'));
+                        return Center(
+                            child: Text('Error: ${categorySnapshot.error}'));
                       }
 
                       final categories = categorySnapshot.data ?? [];
@@ -139,14 +154,12 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
                         if (_isToday(task.dueDate)) {
                           todayTasks.add(task);
-                          // Trigger notification for today's task
                           NotificationHelper.showNotification(
                             title: "Task Due Today",
                             body: "${task.title} is due today!",
                           );
                         } else if (_isOverdue(task.dueDate)) {
                           overdueTasks.add(task);
-                          // Trigger notification for overdue task
                           NotificationHelper.showNotification(
                             title: "Overdue Task",
                             body: "${task.title} is overdue!",
@@ -156,16 +169,18 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                         }
                       }
 
-                      // Build the UI with categorized tasks
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (todayTasks.isNotEmpty)
-                            _buildTaskSection("Today's Tasks", todayTasks, categories),
+                            _buildTaskSection(
+                                "Today's Tasks", todayTasks, categories),
                           if (upcomingTasks.isNotEmpty)
-                            _buildTaskSection("Upcoming Tasks", upcomingTasks, categories),
+                            _buildTaskSection(
+                                "Upcoming Tasks", upcomingTasks, categories),
                           if (overdueTasks.isNotEmpty)
-                            _buildTaskSection("Overdue Tasks", overdueTasks, categories),
+                            _buildTaskSection(
+                                "Overdue Tasks", overdueTasks, categories),
                         ],
                       );
                     },
@@ -178,21 +193,23 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to AddTaskScreen when pressed
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => AddTaskScreen(
                 taskService: widget.taskService,
-                categoryService: widget.categoryService,  // Pass service to the AddTaskScreen
+                categoryService: widget.categoryService,
               ),
             ),
           );
         },
-        child: Icon(Icons.add),
-        backgroundColor: Theme.of(context).primaryColor,
+        child: Icon(Icons.add, size: 30),
+        backgroundColor: Colors.blueAccent,
+        tooltip: "Add New Task",
       ),
     );
+
+
   }
 
   Widget _buildTaskSection(
@@ -204,42 +221,55 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
         children: [
           Text(
             sectionTitle,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
           ),
           SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              final task = tasks[index];
-              final category = categories.firstWhere(
-                    (cat) => cat.id == task.categoryId,
-                orElse: () => Category(
-                  id: "0",
-                  userId: "0",
-                  name: "Unknown",
-                  description: "Unknown Category",
-                  icon: "",
-                ),
-              );
-
-              return TaskCard(
-                task: task,
-                categoryName: category.name,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TaskDetailsScreen(
-                        task: task,
-                        taskService: widget.taskService, // Pass service here as well
-                      ),
+          Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  final task = tasks[index];
+                  final category = categories.firstWhere(
+                        (cat) => cat.id == task.categoryId,
+                    orElse: () => Category(
+                      id: "0",
+                      userId: "0",
+                      name: "Unknown",
+                      description: "Unknown Category",
+                      icon: "",
                     ),
                   );
+
+                  return TaskCard(
+                    task: task,
+                    categoryName: category.name,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskDetailsScreen(
+                            task: task,
+                            taskService: widget.taskService,
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ),
           ),
         ],
       ),

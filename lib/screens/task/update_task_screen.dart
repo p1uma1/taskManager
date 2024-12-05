@@ -92,6 +92,7 @@ class _UpdateTaskScreenState extends State<UpdateTaskScreen> {
 
     try {
       await widget.taskService.updateTask(updatedTask);
+      // Pop back and return the updated task
       Navigator.pop(context, updatedTask);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -102,10 +103,12 @@ class _UpdateTaskScreenState extends State<UpdateTaskScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade300,
         title: Text("Update Task"),
       ),
       body: SingleChildScrollView(
